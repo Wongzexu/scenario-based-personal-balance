@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>联动版个人财务管理系统</title>
+    <style>
+        :root {
+            --border-color: #d1d5db;
+            --header-bg: #f3f4f6;
+            --primary-color: #059669; /* 理财绿 */
+            --total-bg: #e5e7eb;
+            --highlight-bg: #d1fae5;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+        .header-guide {
+            max-width: 1200px;
+            margin: 0 auto 20px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .header-guide h2 { margin-top: 0; color: var(--primary-color); }
+        .header-guide p { line-height: 1.6; color: #4b5563; font-size: 0.95rem; }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .report-card {
+            flex: 1;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin: 40px 0;
+        }
+        .report-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: var(--header-bg);
+            font-weight: 600;
+            color: #374151;
+        }
+        /* 输入框样式 */
+        input[type="text"] {
+            width: 100%;
+            border: 1px solid transparent;
+            padding: 6px;
+            box-sizing: border-box;
+            font-family: inherit;
+            text-align: right;
+            background: transparent;
+            color: #1f2937;
+        }
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            background: #fff;
+            outline: none;
+        }
+        /* 自动计算项的样式 */
+        .auto-calc {
+            background-color: var(--total-bg);
+            font-weight: bold;
+            color: #111827;
+            pointer-events: none;
+        }
+        .section-header {
+            background-color: #f9fafb;
+            font-weight: bold;
+            text-align: center;
+            color: #4b5563;
+        }
+        .linkage-row {
+            background-color: #ecfdf5 !important;
+            border: 2px solid var(--primary-color);
+        }
+        .linkage-text {
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            display: block;
+            margin-top: 4px;
+        }
+        .warning-row {
+            background-color: #fef3c7;
+            border: 2px solid var(--warning-color);
+        }
+        .warning-text {
+            font-size: 0.8rem;
+            color: var(--warning-color);
+            display: block;
+            margin-top: 4px;
+        }
+        .success-row {
+            background-color: #d1fae5;
+            border: 2px solid var(--success-color);
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .header-guide { display: none; }
+            .container { display: block; }
+            .report-card { 
+                box-shadow: none; 
+                border: none; 
+                page-break-after: always; 
+                margin-bottom: 20px;
+            }
+            input { border: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 使用指南 -->
+<div class="header-guide">
+    <h2>📊 联动版个人财务管理系统</h2>
+    <p>
+        <strong>核心联动逻辑：</strong>表一的"本月账面结余"会自动更新表二的"净资产变动"，表二的"净资产"是基于期初净资产+本月变动计算得出。<br>
+        <strong>现金流水联动：</strong>表一的"本月现金净增加额"会联动到表二的现金资产中，反映实际资金变化。
+    </p>
+</div>
+
+<div class="container">
+    <!-- 表1：个人动态收支与现金流表 -->
+    <div class="report-card">
+        <div class="report-title">表一：动态收支与现金流表</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 55%">项目 (本月发生)</th>
+                    <th style="width: 45%">金额 (元)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 利润表部分 -->
+                <tr><td colspan="2" class="section-header">💰 收支利润核算</td></tr>
+                <tr><td>主营业务收入 (工资/劳务)</td><td><input type="text" id="income-main" placeholder="0"></td></tr>
+                <tr><td>投资理财收益 (股息/利息)</td><td><input type="text" id="income-investment" placeholder="0"></td></tr>
+                <tr><td>其他收入 (退款)</td><td><input type="text" id="income-investment" placeholder="0"></td></tr>
+                <tr class="auto-calc"><td>收入总计 (A)</td><td id="total-income">0.00</td></tr>
+
+                <tr><td>生活消费支出 (衣食住行)</td><td><input type="text" id="expense-living" placeholder="0"></td></tr>
+                <tr><td>金融理财支出 (利息/手续费)</td><td><input type="text" id="expense-finance" placeholder="0"></td></tr>
+                <tr class="auto-calc"><td>支出总计 (B)</td><td id="total-expense">0.00</td></tr>
+
+                <tr class="auto-calc success-row">
+                    <td>
+                        本月账面结余 (利润 A-B)
+                        <span class="linkage-text">⬇ 此数值将联动至表二净资产变动</span>
+                    </td>
+                    <td id="net-profit">0.00</td>
+                </tr>
+
+                <!-- 现金流量表部分 -->
+                <tr><td colspan="2" class="section-header">🏦 实际现金流水核算</td></tr>
+                <tr><td>实际现金流入 (到手现金)</td><td><input type="text" id="cash-in" placeholder="0"></td></tr>
+                <tr><td>实际现金流出 (还款/消费扣款)</td><td><input type="text" id="cash-out" placeholder="0"></td></tr>
+                
+                <tr class="auto-calc linkage-row">
+                    <td>
+                        本月实际现金净增加额
+                        <span class="linkage-text">⬇ 此数值将联动至表二现金资产</span>
+                    </td>
+                    <td id="net-cash-flow">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 表2：个人资产负债盘点表 -->
+    <div class="report-card">
+        <div class="report-title">表二：资产负债盘点表</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 55%">项目 (当前时点)</th>
+                    <th style="width: 45%">金额 (元)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="2" class="section-header">🏠 资产</td></tr>
+                <tr><td>期初流动资产 (现金/存款)</td><td><input type="text" id="asset-cash-begin" placeholder="0"></td></tr>
+                <tr><td>期初投资资产 (股票/基金)</td><td><input type="text" id="asset-investment-begin" placeholder="0"></td></tr>
+                <tr><td>期初固定资产 (房产/车辆)</td><td><input type="text" id="asset-fixed-begin" placeholder="0"></td></tr>
+                <tr class="auto-calc"><td>期初资产总计</td><td id="total-assets-begin">0.00</td></tr>
+
+                <tr><td colspan="2" class="section-header">💳 负债</td></tr>
+                <tr><td>期初短期负债 (信用卡/花呗)</td><td><input type="text" id="liability-short-begin" placeholder="0"></td></tr>
+                <tr><td>期初长期负债 (房贷/车贷)</td><td><input type="text" id="liability-long-begin" placeholder="0"></td></tr>
+                <tr class="auto-calc"><td>期初负债总计</td><td id="total-liabilities-begin">0.00</td></tr>
+
+                <tr class="auto-calc" style="background-color: #dbeafe;">
+                    <td>期初净资产 (期初资产-期初负债)</td>
+                    <td id="net-worth-begin">0.00</td>
+                </tr>
+
+                <!-- 本月变动 -->
+                <tr><td colspan="2" class="section-header" style="background-color: #d1fae5; color: var(--primary-color);">📈 本月变动</td></tr>
+                <tr class="success-row">
+                    <td>
+                        本月净资产变动 (利润影响)
+                        <span class="linkage-text">基于表一"本月账面结余"</span>
+                    </td>
+                    <td id="net-worth-change">0.00</td>
+                </tr>
+                <tr class="linkage-row">
+                    <td>
+                        本月现金资产变动 (现金流量影响)
+                        <span class="linkage-text">基于表一"本月现金净增加额"</span>
+                    </td>
+                    <td id="cash-change">0.00</td>
+                </tr>
+
+                <!-- 期末余额 -->
+                <tr><td colspan="2" class="section-header" style="background-color: #d1fae5; color: var(--primary-color);">📉 期末余额</td></tr>
+                <tr class="auto-calc"><td>期末流动资产 (期初+现金变动)</td><td id="asset-cash-end">0.00</td></tr>
+                <tr class="auto-calc"><td>期末投资资产 (期初+投资变动)</td><td id="asset-investment-end">0.00</td></tr>
+                <tr class="auto-calc"><td>期末固定资产</td><td id="asset-fixed-end">0.00</td></tr>
+                <tr class="auto-calc"><td>期末资产总计</td><td id="total-assets-end">0.00</td></tr>
+
+                <tr class="auto-calc"><td>期末短期负债</td><td id="liability-short-end">0.00</td></tr>
+                <tr class="auto-calc"><td>期末长期负债</td><td id="liability-long-end">0.00</td></tr>
+                <tr class="auto-calc"><td>期末负债总计</td><td id="total-liabilities-end">0.00</td></tr>
+
+                <tr class="auto-calc" style="background-color: #dbeafe;">
+                    <td>期末净资产 (期末资产-期末负债)</td>
+                    <td id="net-worth-end">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // 所有输入元素
+    const allInputs = [
+        'income-main', 'income-investment', 'expense-living', 'expense-finance',
+        'cash-in', 'cash-out',
+        'asset-cash-begin', 'asset-investment-begin', 'asset-fixed-begin',
+        'liability-short-begin', 'liability-long-begin'
+    ];
+
+    // 格式化数字（0显示为空）
+    const formatCurrency = (num) => {
+        if (num === 0) return ''; 
+        return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    // 提取纯数字
+    const parseInputValue = (str) => {
+        if (!str) return 0;
+        return parseFloat(str.replace(/,/g, '')) || 0;
+    };
+
+    // 计算函数
+    const calculate = () => {
+        // --- 表一计算：动态收支与现金流 ---
+        const incomeMain = parseInputValue(document.getElementById('income-main').value);
+        const incomeInvestment = parseInputValue(document.getElementById('income-investment').value);
+        const income = incomeMain + incomeInvestment;
+        
+        const expenseLiving = parseInputValue(document.getElementById('expense-living').value);
+        const expenseFinance = parseInputValue(document.getElementById('expense-finance').value);
+        const expense = expenseLiving + expenseFinance;
+        
+        const netProfit = income - expense; // 账面利润
+        
+        const cashIn = parseInputValue(document.getElementById('cash-in').value);
+        const cashOut = parseInputValue(document.getElementById('cash-out').value);
+        const netCashFlow = cashIn - cashOut; // 实际现金净流量
+
+        // 更新表一显示
+        document.getElementById('total-income').textContent = formatCurrency(income);
+        document.getElementById('total-expense').textContent = formatCurrency(expense);
+        document.getElementById('net-profit').textContent = formatCurrency(netProfit);
+        document.getElementById('net-cash-flow').textContent = formatCurrency(netCashFlow);
+
+        // --- 表二计算：资产负债盘点 ---
+        // 期初数据
+        const assetCashBegin = parseInputValue(document.getElementById('asset-cash-begin').value);
+        const assetInvestmentBegin = parseInputValue(document.getElementById('asset-investment-begin').value);
+        const assetFixedBegin = parseInputValue(document.getElementById('asset-fixed-begin').value);
+        const liabilityShortBegin = parseInputValue(document.getElementById('liability-short-begin').value);
+        const liabilityLongBegin = parseInputValue(document.getElementById('liability-long-begin').value);
+        
+        const totalAssetsBegin = assetCashBegin + assetInvestmentBegin + assetFixedBegin;
+        const totalLiabilitiesBegin = liabilityShortBegin + liabilityLongBegin;
+        const netWorthBegin = totalAssetsBegin - totalLiabilitiesBegin;
+
+        // 本月变动
+        const netWorthChange = netProfit; // 净资产变动等于利润
+        const cashChange = netCashFlow; // 现金变动等于现金流量
+
+        // 期末数据
+        const assetCashEnd = assetCashBegin + cashChange;
+        const assetInvestmentEnd = assetInvestmentBegin; // 简化处理，投资变动需单独计算
+        const assetFixedEnd = assetFixedBegin; // 简化处理
+        const totalAssetsEnd = assetCashEnd + assetInvestmentEnd + assetFixedEnd;
+        
+        const liabilityShortEnd = liabilityShortBegin; // 简化处理，负债变动需单独计算
+        const liabilityLongEnd = liabilityLongBegin; // 简化处理
+        const totalLiabilitiesEnd = liabilityShortEnd + liabilityLongEnd;
+        
+        const netWorthEnd = netWorthBegin + netWorthChange;
+
+        // 更新表二显示
+        document.getElementById('total-assets-begin').textContent = formatCurrency(totalAssetsBegin);
+        document.getElementById('total-liabilities-begin').textContent = formatCurrency(totalLiabilitiesBegin);
+        document.getElementById('net-worth-begin').textContent = formatCurrency(netWorthBegin);
+        
+        document.getElementById('net-worth-change').textContent = formatCurrency(netWorthChange);
+        document.getElementById('cash-change').textContent = formatCurrency(cashChange);
+        
+        document.getElementById('asset-cash-end').textContent = formatCurrency(assetCashEnd);
+        document.getElementById('asset-investment-end').textContent = formatCurrency(assetInvestmentEnd);
+        document.getElementById('asset-fixed-end').textContent = formatCurrency(assetFixedEnd);
+        document.getElementById('total-assets-end').textContent = formatCurrency(totalAssetsEnd);
+        
+        document.getElementById('liability-short-end').textContent = formatCurrency(liabilityShortEnd);
+        document.getElementById('liability-long-end').textContent = formatCurrency(liabilityLongEnd);
+        document.getElementById('total-liabilities-end').textContent = formatCurrency(totalLiabilitiesEnd);
+        
+        document.getElementById('net-worth-end').textContent = formatCurrency(netWorthEnd);
+    };
+
+    // 为所有输入框绑定事件
+    allInputs.forEach(id => {
+        const element = document.getElementById(id);
+        element.addEventListener('focus', function() {
+            const val = parseInputValue(this.value);
+            this.value = val === 0 ? '' : val;
+        });
+        element.addEventListener('blur', function() {
+            const val = parseInputValue(this.value);
+            this.value = formatCurrency(val);
+        });
+        element.addEventListener('input', calculate);
+    });
+
+    // 初始化计算
+    calculate();
+    
+    // 添加数据持久化功能
+    window.addEventListener('beforeunload', function() {
+        const data = {};
+        allInputs.forEach(id => {
+            const element = document.getElementById(id);
+            if(element.value && element.value.trim() !== '') {
+                data[id] = element.value;
+            }
+        });
+        localStorage.setItem('financeData', JSON.stringify(data));
+    });
+    
+    // 页面加载时恢复数据
+    window.addEventListener('load', function() {
+        const savedData = JSON.parse(localStorage.getItem('financeData') || '{}');
+        allInputs.forEach(id => {
+            const element = document.getElementById(id);
+            if(savedData[id]) {
+                element.value = savedData[id];
+            }
+        });
+        calculate();
+    });
+</script>
+
+</body>
+</html>
+
+
+

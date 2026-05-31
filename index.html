@@ -1,0 +1,2541 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>情景记账版个人财务管理系统</title>
+    <style>
+      :root {
+        --border-color: #d1d5db;
+        --header-bg: #f3f4f6;
+        --primary-color: #059669;
+        --total-bg: #e5e7eb;
+        --highlight-bg: #d1fae5;
+        --warning-color: #f59e0b;
+        --success-color: #10b981;
+        --bg-color: #f9fafb;
+        --danger-color: #ef4444;
+        --text-muted: #9ca3af;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        padding: 30px;
+        background-color: var(--bg-color);
+        color: #1f2937;
+      }
+      .header-guide {
+        max-width: 1200px;
+        margin: 0 auto 20px;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 5px solid var(--primary-color);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .header-guide h2 {
+        margin-top: 0;
+        color: var(--primary-color);
+      }
+      .header-guide p {
+        line-height: 1.6;
+        color: #4b5563;
+        font-size: 0.95rem;
+      }
+      .container {
+        max-width: 1500px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .report-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 25px;
+      }
+      .report-title {
+        text-align: center;
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: var(--primary-color);
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 10px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+      th,
+      td {
+        border: 1px solid var(--border-color);
+        padding: 10px 12px;
+        text-align: left;
+      }
+      th {
+        background-color: var(--header-bg);
+        font-weight: 600;
+        color: #374151;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #374151;
+      }
+      .label-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .request-link {
+        font-size: 0.75rem;
+        font-weight: 400;
+        color: var(--primary-color);
+        cursor: pointer;
+        text-decoration: underline;
+        white-space: nowrap;
+      }
+      .request-link:hover {
+        color: #047857;
+      }
+      select,
+      .amount-input-wrapper input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+      .amount-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .amount-input-wrapper input {
+        padding-left: 38px;
+        padding-right: 32px;
+      }
+      .calc-toggle {
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        font-size: 1.1rem;
+        user-select: none;
+        z-index: 2;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+      }
+      .calc-toggle.active {
+        opacity: 1;
+      }
+      .calc-toggle:hover {
+        opacity: 0.8;
+      }
+      .clear-input {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        font-size: 1rem;
+        color: var(--text-muted);
+        user-select: none;
+        z-index: 2;
+        display: none;
+      }
+      .clear-input:hover {
+        color: var(--danger-color);
+      }
+      .btn {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 100%;
+        font-weight: bold;
+        transition: background 0.3s;
+      }
+      .btn:hover {
+        background-color: #047857;
+      }
+      .status {
+        font-size: 0.85rem;
+        margin-top: 10px;
+        text-align: center;
+        padding: 8px;
+        border-radius: 4px;
+      }
+      .status.error {
+        color: var(--danger-color);
+        background: #fef2f2;
+      }
+      .status.success {
+        color: var(--success-color);
+        background: #f0fdf4;
+      }
+      .status.info {
+        color: #6b7280;
+        background: #f3f4f6;
+      }
+      .auto-calc {
+        background-color: var(--total-bg);
+        font-weight: bold;
+      }
+      .section-header {
+        background-color: #f9fafb;
+        font-weight: bold;
+        text-align: center;
+        color: #4b5563;
+      }
+      .preview-area {
+        margin-top: 20px;
+        border: 1px dashed var(--border-color);
+        border-radius: 8px;
+        padding: 15px;
+        background: #fafafa;
+      }
+      .preview-area h4 {
+        margin: 0 0 10px;
+        color: #374151;
+        font-size: 0.95rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .preview-table {
+        font-size: 0.82rem;
+      }
+      .preview-table th {
+        font-size: 0.78rem;
+        padding: 6px 8px;
+      }
+      .preview-table td {
+        padding: 6px 8px;
+      }
+      .preview-empty {
+        text-align: center;
+        color: var(--text-muted);
+        padding: 20px;
+        font-size: 0.85rem;
+      }
+      .preview-row-delete {
+        color: var(--danger-color);
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+      }
+      .preview-row-delete:hover {
+        background: #fef2f2;
+      }
+      .clear-all-btn {
+        font-size: 0.75rem;
+        color: var(--danger-color);
+        cursor: pointer;
+        text-decoration: underline;
+        background: none;
+        border: none;
+      }
+      .clear-all-btn:hover {
+        color: #dc2626;
+      }
+      .submit-btn {
+        display: block;
+        width: 100%;
+        margin-top: 12px;
+        padding: 12px 20px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .submit-btn:hover {
+        background-color: #047857;
+      }
+      .submit-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .submitted-badge {
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+      .snapshot-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+      }
+      .snapshot-btn {
+        font-size: 0.8rem;
+        padding: 6px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        cursor: pointer;
+        background: white;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      .snapshot-btn:hover {
+        background: var(--header-bg);
+      }
+      .snapshot-btn.save {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+      }
+      .snapshot-btn.save:hover {
+        background: var(--highlight-bg);
+      }
+      .snapshot-btn.export {
+        border-color: #6366f1;
+        color: #6366f1;
+      }
+      .snapshot-btn.export:hover {
+        background: #eef2ff;
+      }
+      .snapshot-btn.history {
+        border-color: #8b5cf6;
+        color: #8b5cf6;
+      }
+      .snapshot-btn.history:hover {
+        background: #f5f3ff;
+      }
+      .snapshot-btn.reset {
+        border-color: var(--warning-color);
+        color: var(--warning-color);
+      }
+      .snapshot-btn.reset:hover {
+        background: #fef3c7;
+      }
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal-dialog {
+        background: white;
+        border-radius: 12px;
+        padding: 0;
+        width: 90%;
+        max-width: 650px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .modal-header h3 {
+        margin: 0;
+        color: #374151;
+        font-size: 1.1rem;
+      }
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.4rem;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+      .modal-close:hover {
+        background: var(--header-bg);
+        color: #374151;
+      }
+      .modal-body {
+        padding: 20px 24px;
+        overflow-y: auto;
+        flex: 1;
+      }
+      .modal-empty {
+        text-align: center;
+        color: var(--text-muted);
+        padding: 30px;
+      }
+      .snapshot-list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .snapshot-list-item:hover {
+        background: var(--highlight-bg);
+        border-color: var(--primary-color);
+      }
+      .snapshot-list-item .info {
+        flex: 1;
+      }
+      .snapshot-list-item .info .period {
+        font-weight: 600;
+        color: #374151;
+      }
+      .snapshot-list-item .info .meta {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+      .snapshot-list-item .delete-snapshot {
+        color: var(--danger-color);
+        cursor: pointer;
+        padding: 4px 8px;
+        font-size: 0.85rem;
+        border: none;
+        background: none;
+        border-radius: 4px;
+      }
+      .snapshot-list-item .delete-snapshot:hover {
+        background: #fef2f2;
+      }
+      .choice-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .choice-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        text-align: left;
+        font-size: 0.95rem;
+        transition: all 0.15s;
+      }
+      .choice-btn:hover {
+        border-color: var(--primary-color);
+        background: #f0fdf4;
+      }
+      .choice-btn .choice-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+      }
+      .choice-btn .choice-text {
+        flex: 1;
+      }
+      .choice-btn .choice-text .title {
+        font-weight: 600;
+        color: #374151;
+      }
+      .choice-btn .choice-text .desc {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+      .modal-toolbar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .modal-toolbar-btn {
+        font-size: 0.82rem;
+        padding: 6px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .modal-toolbar-btn:hover {
+        background: var(--header-bg);
+        border-color: var(--primary-color);
+      }
+      .period-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.82rem;
+        color: #6b7280;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        background: #f9fafb;
+        border-radius: 4px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .period-info .diff {
+        color: var(--primary-color);
+        font-weight: 600;
+      }
+      /* 开始本期界面 */
+      .start-section {
+        text-align: center;
+        padding: 50px 20px;
+      }
+      .start-section .start-icon {
+        font-size: 3rem;
+        margin-bottom: 16px;
+      }
+      .start-section .start-desc {
+        font-size: 1rem;
+        color: #4b5563;
+        margin-bottom: 28px;
+        line-height: 1.8;
+      }
+      .start-section .start-btn {
+        display: inline-block;
+        width: auto;
+        padding: 14px 44px;
+        font-size: 1.15rem;
+      }
+      /* 手动期初输入框 */
+      .manual-start-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+      .manual-start-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.15);
+      }
+      @media (max-width: 768px) {
+        .container {
+          grid-template-columns: 1fr;
+        }
+        .period-info {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header-guide">
+      <h2>🚀 情景记账版个人财务管理系统</h2>
+      <p>
+        <strong>操作流程：</strong> 1. 选择记账场景 → 2. 输入金额 → 3.
+        点击"确认记账" → 4. 查看右侧资产负债变化。
+      </p>
+    </div>
+    <div class="container">
+      <div class="report-card">
+        <div class="report-title">📝 情景记账录入</div>
+        <div id="start-section">
+          <div class="start-section">
+            <div class="start-icon">📊</div>
+            <div class="start-desc">
+              欢迎使用情景记账管理系统<br>请先设定本期期初资产负债数据，再开始记账
+            </div>
+            <button class="btn start-btn" onclick="openStartPeriodModal()">🚀 开始本期</button>
+          </div>
+        </div>
+        <div id="form-section" style="display: none">
+          <div style="display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;">
+            <button class="snapshot-btn reset" onclick="startNewPeriod()"
+              style="flex:1;text-align:center;">🔄 开始新的一期</button>
+          </div>
+          <div class="form-group">
+            <label
+              ><span class="label-left">1. 选择场景大类</span
+              ><span class="request-link" onclick="requestAdd('大类')"
+                >申请增加</span
+              ></label
+            >
+            <select id="scenario-type">
+              <option value="">-- 请选择大类 --</option>
+              <option value="income">💰 工资与收入</option>
+              <option value="expense">🛒 日常消费</option>
+              <option value="investment">📈 投资理财</option>
+              <option value="fixed_asset">🏠 固定资产</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label
+              ><span class="label-left">2. 选择具体情景</span
+              ><span class="request-link" onclick="requestAdd('情景')"
+                >申请增加</span
+              ></label
+            >
+            <select id="scenario-sub" disabled>
+              <option value="">-- 请先选择大类 --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>3. 输入金额</label>
+            <div class="amount-input-wrapper">
+              <span
+                class="calc-toggle"
+                id="calc-toggle"
+                title="点击开启计算模式"
+                onclick="toggleCalcMode()"
+                >🔢</span
+              >
+              <input
+                type="text"
+                id="amount"
+                placeholder="请输入金额"
+                autocomplete="off"
+              />
+              <span
+                class="clear-input"
+                id="clear-input"
+                title="清空"
+                onclick="clearAmount()"
+                >✕</span
+              >
+            </div>
+          </div>
+          <button class="btn" onclick="confirmTransaction()">确认</button>
+          <div class="status info" id="status-msg">请选择大类</div>
+          <div class="preview-area" id="preview-area">
+            <h4>
+              📋 待确认记录<button
+                class="clear-all-btn"
+                id="clear-all-btn"
+                onclick="clearAllPending()"
+                style="display: none"
+              >
+                清空全部
+              </button>
+            </h4>
+            <div id="preview-content">
+              <div class="preview-empty">暂无记录，记账后将显示在此处</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="report-card">
+        <div class="report-title">资产负债盘点表</div>
+        <div class="snapshot-bar">
+          <button class="snapshot-btn save" onclick="saveSnapshot()">
+            💾 保存快照
+          </button>
+          <button class="snapshot-btn history" onclick="openHistoryModal()">
+            🗄️ 历史存档
+          </button>
+          <button class="snapshot-btn export" onclick="exportReport()">
+            📥 打印报表
+          </button>
+          <button class="snapshot-btn reset" onclick="resetPeriod()">
+            🔄 重置本期
+          </button>
+          <input
+            type="file"
+            id="snapshot-import"
+            accept=".json"
+            style="display: none"
+            onchange="importSnapshot(event)"
+          />
+        </div>
+        <div class="period-info" id="period-info">
+          <span
+            >📅 期初时间：<strong id="period-begin-time">未设定</strong></span
+          >
+          <span>📅 本期时间：<strong id="period-current-time">--</strong></span>
+          <span id="period-diff" style="display: none"
+            >⏱ 间隔：<strong class="diff" id="period-diff-text"></strong
+          ></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 55%">项目</th>
+              <th style="width: 45%">金额 (元)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="2" class="section-header">🏠 资产</td>
+            </tr>
+            <tr>
+              <td>期初流动资产 (现金/存款)</td>
+              <td><span id="asset-cash-begin">0.00</span></td>
+            </tr>
+            <tr>
+              <td>期初投资资产 (股票/基金)</td>
+              <td><span id="asset-investment-begin">0.00</span></td>
+            </tr>
+            <tr>
+              <td>期初固定资产 (房产/车辆)</td>
+              <td><span id="asset-fixed-begin">0.00</span></td>
+            </tr>
+            <tr class="auto-calc">
+              <td>期初资产总计</td>
+              <td id="total-assets-begin">0.00</td>
+            </tr>
+            <tr>
+              <td colspan="2" class="section-header">💳 负债</td>
+            </tr>
+            <tr>
+              <td>期初短期负债 (信用卡/花呗)</td>
+              <td><span id="liability-short-begin">0.00</span></td>
+            </tr>
+            <tr>
+              <td>期初长期负债 (房贷/车贷)</td>
+              <td><span id="liability-long-begin">0.00</span></td>
+            </tr>
+            <tr class="auto-calc">
+              <td>期初负债总计</td>
+              <td id="total-liabilities-begin">0.00</td>
+            </tr>
+            <tr class="auto-calc" style="background-color: #dbeafe">
+              <td>期初净资产</td>
+              <td id="net-worth-begin">0.00</td>
+            </tr>
+            <tr>
+              <td
+                colspan="2"
+                class="section-header"
+                style="background-color: #d1fae5"
+              >
+                📈 本期变动
+              </td>
+            </tr>
+            <tr>
+              <td>本期现金变动</td>
+              <td id="total-cash-change">0.00</td>
+            </tr>
+            <tr>
+              <td>本期投资变动</td>
+              <td id="total-investment-change">0.00</td>
+            </tr>
+            <tr>
+              <td>本期固定资产变动</td>
+              <td id="total-fixed-change">0.00</td>
+            </tr>
+            <tr>
+              <td>本期负债变动</td>
+              <td id="total-liability-change">0.00</td>
+            </tr>
+            <tr>
+              <td>本期利润影响</td>
+              <td id="total-profit-impact">0.00</td>
+            </tr>
+            <tr>
+              <td
+                colspan="2"
+                class="section-header"
+                style="background-color: #d1fae5"
+              >
+                📉 期末余额
+              </td>
+            </tr>
+            <tr class="auto-calc">
+              <td>期末流动资产</td>
+              <td id="asset-cash-end">0.00</td>
+            </tr>
+            <tr class="auto-calc">
+              <td>期末投资资产</td>
+              <td id="asset-investment-end">0.00</td>
+            </tr>
+            <tr class="auto-calc">
+              <td>期末固定资产</td>
+              <td id="asset-fixed-end">0.00</td>
+            </tr>
+            <tr class="auto-calc">
+              <td>期末资产总计</td>
+              <td id="total-assets-end">0.00</td>
+            </tr>
+            <tr class="auto-calc">
+              <td>期末短期负债</td>
+              <td id="liability-short-end">0.00</td>
+            </tr>
+            <tr class="auto-calc">
+              <td>期末长期负债</td>
+              <td id="liability-long-end">0.00</td>
+            </tr>
+            <tr class="auto-calc">
+              <td>期末负债总计</td>
+              <td id="total-liabilities-end">0.00</td>
+            </tr>
+            <tr class="auto-calc" style="background-color: #dbeafe">
+              <td>期末净资产</td>
+              <td id="net-worth-end">0.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 打印报表选择弹窗 -->
+    <div class="modal-overlay" id="print-choice-modal">
+      <div class="modal-dialog" style="max-width: 420px">
+        <div class="modal-header">
+          <h3>🖨️ 打印报表</h3>
+          <button
+            class="modal-close"
+            onclick="closeModal('print-choice-modal')"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="choice-list">
+            <button class="choice-btn" onclick="doExportPNG()">
+              <span class="choice-icon">🖼️</span
+              ><span class="choice-text"
+                ><span class="title">PNG 图片</span
+                ><span class="desc"
+                  >下载为图片文件，适合快速分享、预览</span
+                ></span
+              >
+            </button>
+            <button class="choice-btn" onclick="doExportPDF()">
+              <span class="choice-icon">📄</span
+              ><span class="choice-text"
+                ><span class="title">PDF 文件</span
+                ><span class="desc"
+                  >通过浏览器打印为PDF，适合正式归档</span
+                ></span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 保存快照选择弹窗 -->
+    <div class="modal-overlay" id="save-choice-modal">
+      <div class="modal-dialog" style="max-width: 420px">
+        <div class="modal-header">
+          <h3>💾 保存快照</h3>
+          <button class="modal-close" onclick="closeModal('save-choice-modal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="choice-list">
+            <button class="choice-btn" onclick="doSaveSnapshot('local')">
+              <span class="choice-icon">💻</span
+              ><span class="choice-text"
+                ><span class="title">保存到本地缓存</span
+                ><span class="desc"
+                  >仅存浏览器，可在历史存档中查看加载</span
+                ></span
+              >
+            </button>
+            <button class="choice-btn" onclick="doSaveSnapshot('json')">
+              <span class="choice-icon">📁</span
+              ><span class="choice-text"
+                ><span class="title">导出 JSON 文件</span
+                ><span class="desc"
+                  >下载到电脑，可跨设备传输、永久保存</span
+                ></span
+              >
+            </button>
+            <button class="choice-btn" onclick="doSaveSnapshot('both')">
+              <span class="choice-icon">✅</span
+              ><span class="choice-text"
+                ><span class="title">两者都要（推荐）</span
+                ><span class="desc">同时保存到浏览器和下载JSON文件</span></span
+              >
+            </button>
+            <button class="choice-btn" onclick="startOverwriteMode()">
+              <span class="choice-icon">📝</span
+              ><span class="choice-text"
+                ><span class="title">覆盖已有存档</span
+                ><span class="desc">用当前状态覆盖一个已有的快照</span></span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 历史存档模态框 -->
+    <div class="modal-overlay" id="history-modal">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>🗄️ 数据管理</h3>
+          <button class="modal-close" onclick="closeHistoryModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-toolbar">
+            <button
+              class="modal-toolbar-btn"
+              onclick="document.getElementById('snapshot-import').click()"
+            >
+              📁 从JSON文件导入
+            </button>
+          </div>
+          <div id="history-list"><div class="modal-empty">加载中...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 开始本期选择弹窗 -->
+    <div class="modal-overlay" id="start-period-modal">
+      <div class="modal-dialog" style="max-width: 420px">
+        <div class="modal-header">
+          <h3>🚀 开始本期</h3>
+          <button class="modal-close" onclick="closeModal('start-period-modal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.85rem; color:#6b7280; margin:0 0 16px;">
+            选择一种方式设定本期期初数据：
+          </p>
+          <div class="choice-list">
+            <button class="choice-btn" onclick="startFromHistory()">
+              <span class="choice-icon">📋</span
+              ><span class="choice-text"
+                ><span class="title">从历史存档开始</span
+                ><span class="desc">选择已保存的快照，其期末数据将转为新时期初</span></span
+              >
+            </button>
+            <button class="choice-btn" onclick="startFromJSON()">
+              <span class="choice-icon">📁</span
+              ><span class="choice-text"
+                ><span class="title">从JSON文件导入</span
+                ><span class="desc">导入之前导出的快照JSON文件</span></span
+              >
+            </button>
+            <button class="choice-btn" onclick="startManual()">
+              <span class="choice-icon">✏️</span
+              ><span class="choice-text"
+                ><span class="title">手动输入期初数据</span
+                ><span class="desc">自行填写各资产负债项目的期初金额</span></span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 手动输入期初数据弹窗 -->
+    <div class="modal-overlay" id="manual-start-modal">
+      <div class="modal-dialog" style="max-width: 420px">
+        <div class="modal-header">
+          <h3>✏️ 手动输入期初数据</h3>
+          <button class="modal-close" onclick="closeModal('manual-start-modal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>流动资产 (现金/存款)</label>
+            <input type="number" id="manual-cash" placeholder="0.00" step="0.01" class="manual-start-input">
+          </div>
+          <div class="form-group">
+            <label>投资资产 (股票/基金)</label>
+            <input type="number" id="manual-investment" placeholder="0.00" step="0.01" class="manual-start-input">
+          </div>
+          <div class="form-group">
+            <label>固定资产 (房产/车辆)</label>
+            <input type="number" id="manual-fixed" placeholder="0.00" step="0.01" class="manual-start-input">
+          </div>
+          <div class="form-group">
+            <label>短期负债 (信用卡/花呗)</label>
+            <input type="number" id="manual-liability-short" placeholder="0.00" step="0.01" class="manual-start-input">
+          </div>
+          <div class="form-group">
+            <label>长期负债 (房贷/车贷)</label>
+            <input type="number" id="manual-liability-long" placeholder="0.00" step="0.01" class="manual-start-input">
+          </div>
+          <button class="btn" onclick="confirmManualStart()">✅ 确认开始</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 开始新的一期确认弹窗 -->
+    <div class="modal-overlay" id="new-period-modal">
+      <div class="modal-dialog" style="max-width: 420px">
+        <div class="modal-header">
+          <h3>🔄 开始新的一期</h3>
+          <button class="modal-close" onclick="closeModal('new-period-modal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.85rem; color:#6b7280; margin:0 0 16px;">
+            当前数据将被重置，回到初始化界面重新设定期初数据：
+          </p>
+          <div class="choice-list">
+            <button class="choice-btn" onclick="doStartNewPeriod(true)">
+              <span class="choice-icon">💾</span
+              ><span class="choice-text"
+                ><span class="title">保存快照并开始新一期</span
+                ><span class="desc">先将当前数据保存为快照，再回到初始化界面</span></span
+              >
+            </button>
+            <button class="choice-btn" onclick="doStartNewPeriod(false)">
+              <span class="choice-icon">🗑️</span
+              ><span class="choice-text"
+                ><span class="title">不保存，直接开始新一期</span
+                ><span class="desc">不保留当前数据，直接回到初始化界面</span></span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ==================== 1. 情景映射表 ====================
+      var SCENARIO_MAP = {
+        income: {
+          salary: {
+            name: "工资收入",
+            asset: "cash",
+            amount: 1,
+            liability: 0,
+            liabilityDir: null,
+            fixedChange: 0,
+            profit: 1,
+          },
+        },
+        expense: {
+          credit_buy: {
+            name: "日常消费(信用卡)",
+            asset: null,
+            assetAmount: 0,
+            liability: "short",
+            liabilityDir: 1,
+            fixedChange: 0,
+            profit: -1,
+          },
+          cash_buy: {
+            name: "现金消费/转账",
+            asset: "cash",
+            amount: -1,
+            liability: 0,
+            liabilityDir: null,
+            fixedChange: 0,
+            profit: -1,
+          },
+          credit_refund: {
+            name: "消费退款(信用卡)",
+            asset: null,
+            assetAmount: 0,
+            liability: "short",
+            liabilityDir: -1,
+            fixedChange: 0,
+            profit: 1,
+          },
+          cash_refund: {
+            name: "现金退款/转回",
+            asset: "cash",
+            amount: 1,
+            liability: 0,
+            liabilityDir: null,
+            fixedChange: 0,
+            profit: 1,
+          },
+          repay_short: {
+            name: "信用卡还款（短期）",
+            asset: "cash",
+            amount: -1,
+            liability: "short",
+            liabilityDir: -1,
+            fixedChange: 0,
+            profit: 0,
+          },
+        },
+        investment: {
+          investment_buy: {
+            name: "投资支出(买入)",
+            asset: "investment",
+            amount: 1,
+            liability: 0,
+            liabilityDir: null,
+            fixedChange: 0,
+            profit: 0,
+          },
+          investment_sell: {
+            name: "本期赎回(卖出)",
+            asset: "cash",
+            amount: 1,
+            liability: 0,
+            liabilityDir: null,
+            fixedChange: 0,
+            profit: 0,
+          },
+          investment_dividend: {
+            name: "投资收益(分红/亏损)",
+            asset: "cash",
+            amount: 1,
+            liability: 0,
+            liabilityDir: null,
+            fixedChange: 0,
+            profit: 1,
+          },
+        },
+        fixed_asset: {
+          repay_long: {
+            name: "偿还贷款（长期）",
+            asset: "cash",
+            amount: -1,
+            liability: "long",
+            liabilityDir: -1,
+            fixedChange: 0,
+            profit: 0,
+          },
+          asset_increase: {
+            name: "资产增加",
+            asset: null,
+            amount: 0,
+            liability: 0,
+            liabilityDir: null,
+            fixedChange: 1,
+            profit: 0,
+          },
+          add_long_loan: {
+            name: "添加贷款（长期）",
+            asset: "cash",
+            amount: 1,
+            liability: "long",
+            liabilityDir: 1,
+            fixedChange: 0,
+            profit: 0,
+          },
+        },
+      };
+
+      // ==================== 2. 全局状态 ====================
+      var calcMode = false;
+      var pendingTransactions = [];
+      var transactionIdCounter = 0;
+      var startingNewPeriod = false; // 标记是否处于"开始本期"流程中
+      var overwriteMode = false; // 标记是否处于覆盖存档模式
+
+      // ==================== 3. 页面初始化 ====================
+      window.onload = function () {
+        document
+          .getElementById("scenario-type")
+          .addEventListener("change", updateSubOptions);
+        document
+          .getElementById("amount")
+          .addEventListener("input", onAmountInput);
+        document
+          .getElementById("amount")
+          .addEventListener("keydown", onAmountKeydown);
+        document
+          .getElementById("amount")
+          .addEventListener("focus", onAmountFocus);
+        updatePeriodDisplay();
+        restoreData();
+        checkPeriodAndShowUI();
+        calculate();
+        updateStatus();
+        renderPendingList();
+      };
+
+      // ==================== 3.1 开始本期相关函数 ====================
+      function isPeriodActive() {
+        var beginTime = localStorage.getItem("finance_BeginTime");
+        if (!beginTime) return false;
+        var bd = getBaseData();
+        return !(bd.cash === 0 && bd.investment === 0 &&
+                 bd.fixed === 0 && bd.liabilityShort === 0 &&
+                 bd.liabilityLong === 0);
+      }
+      function checkPeriodAndShowUI() {
+        var startSection = document.getElementById("start-section");
+        var formSection = document.getElementById("form-section");
+        if (isPeriodActive()) {
+          startSection.style.display = "none";
+          formSection.style.display = "block";
+        } else {
+          startSection.style.display = "block";
+          formSection.style.display = "none";
+        }
+      }
+      function transitionToFormView() {
+        document.getElementById("start-section").style.display = "none";
+        document.getElementById("form-section").style.display = "block";
+      }
+      function openStartPeriodModal() {
+        openModal("start-period-modal");
+      }
+      function startFromHistory() {
+        startingNewPeriod = true;
+        closeModal("start-period-modal");
+        openHistoryModal();
+      }
+      function startFromJSON() {
+        startingNewPeriod = true;
+        closeModal("start-period-modal");
+        document.getElementById("snapshot-import").click();
+      }
+      function startManual() {
+        closeModal("start-period-modal");
+        document.getElementById("manual-cash").value = "";
+        document.getElementById("manual-investment").value = "";
+        document.getElementById("manual-fixed").value = "";
+        document.getElementById("manual-liability-short").value = "";
+        document.getElementById("manual-liability-long").value = "";
+        openModal("manual-start-modal");
+      }
+      function confirmManualStart() {
+        var cash = parseFloat(document.getElementById("manual-cash").value) || 0;
+        var investment = parseFloat(document.getElementById("manual-investment").value) || 0;
+        var fixed = parseFloat(document.getElementById("manual-fixed").value) || 0;
+        var liabilityShort = parseFloat(document.getElementById("manual-liability-short").value) || 0;
+        var liabilityLong = parseFloat(document.getElementById("manual-liability-long").value) || 0;
+        saveBaseData({
+          cash: cash,
+          investment: investment,
+          fixed: fixed,
+          liabilityShort: liabilityShort,
+          liabilityLong: liabilityLong,
+        });
+        saveChangesData({
+          cash: 0, investment: 0, fixed: 0,
+          liabilityShort: 0, liabilityLong: 0, profit: 0,
+        });
+        pendingTransactions = [];
+        transactionIdCounter = 0;
+        localStorage.removeItem("finance_Pending");
+        var now = new Date().toLocaleString("zh-CN");
+        localStorage.setItem("finance_BeginTime", now);
+        document.getElementById("period-begin-time").textContent = now;
+        closeModal("manual-start-modal");
+        transitionToFormView();
+        updatePeriodDisplay();
+        calculate();
+        renderPendingList();
+        updateStatus();
+      }
+
+      // ==================== 3.2 快照覆盖相关函数 ====================
+      function startOverwriteMode() {
+        overwriteMode = true;
+        closeModal("save-choice-modal");
+        openHistoryModal();
+      }
+      function overwriteSnapshot(id) {
+        var snapshots = getSnapshots();
+        var snap = snapshots.find(function (s) {
+          return s.id === id;
+        });
+        if (!snap) return;
+        if (!confirm("📝 确定用当前数据覆盖这条存档吗？\n\n存档时间：" + (snap.label || snap.savedAt) + "\n此操作不可撤销。")) return;
+        var now = new Date();
+        snap.baseData = getBaseData();
+        snap.changes = getChangesData();
+        snap.pending = pendingTransactions;
+        snap.endTime = now.toLocaleString("zh-CN");
+        snap.savedAt = now.toISOString();
+        snap.label = now.toLocaleString("zh-CN", {
+          year: "numeric", month: "long", day: "numeric",
+          weekday: "short", hour: "2-digit", minute: "2-digit",
+        });
+        saveSnapshots(snapshots);
+        overwriteMode = false;
+        closeHistoryModal();
+        alert("✅ 存档已覆盖！");
+      }
+
+      // ==================== 3.3 开始新的一期相关函数 ====================
+      function startNewPeriod() {
+        openModal("new-period-modal");
+      }
+      function doStartNewPeriod(saveFirst) {
+        closeModal("new-period-modal");
+        if (saveFirst) {
+          var now = new Date();
+          var snapshot = {
+            id: "snap_" + now.getTime(),
+            version: "1.0",
+            type: "finance-snapshot",
+            beginTime: localStorage.getItem("finance_BeginTime") || now.toLocaleString("zh-CN"),
+            endTime: now.toLocaleString("zh-CN"),
+            savedAt: now.toISOString(),
+            label: now.toLocaleString("zh-CN", {
+              year: "numeric", month: "long", day: "numeric",
+              weekday: "short", hour: "2-digit", minute: "2-digit",
+            }),
+            baseData: getBaseData(),
+            changes: getChangesData(),
+            pending: pendingTransactions,
+          };
+          var snapshots = getSnapshots();
+          snapshots.unshift(snapshot);
+          if (snapshots.length > 50) snapshots.length = 50;
+          saveSnapshots(snapshots);
+          alert("💾 当前数据已保存为快照。");
+        }
+        // 清除所有数据，回到初始化界面
+        localStorage.removeItem("finance_BeginTime");
+        saveBaseData({
+          cash: 0, investment: 0, fixed: 0, liabilityShort: 0, liabilityLong: 0,
+        });
+        saveChangesData({
+          cash: 0, investment: 0, fixed: 0,
+          liabilityShort: 0, liabilityLong: 0, profit: 0,
+        });
+        pendingTransactions = [];
+        transactionIdCounter = 0;
+        submittedThisSession = false;
+        localStorage.removeItem("finance_Pending");
+        checkPeriodAndShowUI();
+        updatePeriodDisplay();
+        calculate();
+        renderPendingList();
+        updateStatus();
+      }
+
+      // ==================== 4. 更新子选项 ====================
+      function updateSubOptions() {
+        var typeSelect = document.getElementById("scenario-type");
+        var subSelect = document.getElementById("scenario-sub");
+        var selectedType = typeSelect.value;
+        subSelect.innerHTML = '<option value="">-- 请选择 --</option>';
+        subSelect.disabled = !selectedType;
+        if (selectedType && SCENARIO_MAP[selectedType]) {
+          var subGroup = SCENARIO_MAP[selectedType];
+          var keys = Object.keys(subGroup);
+          keys.forEach(function (key) {
+            var option = document.createElement("option");
+            option.value = key;
+            option.textContent = subGroup[key].name;
+            subSelect.appendChild(option);
+          });
+          if (keys.length === 1) {
+            subSelect.value = keys[0];
+          }
+        }
+        updateStatus();
+      }
+
+      // ==================== 5. 金额输入处理 ====================
+      function onAmountInput() {
+        document.getElementById("clear-input").style.display =
+          document.getElementById("amount").value.length > 0 ? "block" : "none";
+        updateStatus();
+      }
+      function onAmountFocus() {
+        document.getElementById("clear-input").style.display =
+          document.getElementById("amount").value.length > 0 ? "block" : "none";
+      }
+      function onAmountKeydown(e) {
+        if (e.key === "Enter") {
+          confirmTransaction();
+        }
+      }
+      function clearAmount() {
+        document.getElementById("amount").value = "";
+        document.getElementById("clear-input").style.display = "none";
+        updateStatus();
+      }
+      function toggleCalcMode() {
+        calcMode = !calcMode;
+        var toggle = document.getElementById("calc-toggle");
+        var input = document.getElementById("amount");
+        if (calcMode) {
+          toggle.textContent = "🧮";
+          toggle.classList.add("active");
+          toggle.title = "计算模式已开启，输入算式后按回车计算";
+          input.placeholder = "例如: 100+50*2-30/3";
+        } else {
+          toggle.textContent = "🔢";
+          toggle.classList.remove("active");
+          toggle.title = "点击开启计算模式";
+          input.placeholder = "请输入金额";
+        }
+      }
+      function parseAmount(rawStr) {
+        if (!rawStr || !rawStr.trim())
+          return { value: NaN, expression: rawStr };
+        var str = rawStr.replace(/,/g, "").trim();
+        if (calcMode) {
+          var sanitized = str.replace(/\s/g, "");
+          if (!/^[\d+\-*/().%]+$/.test(sanitized)) {
+            return { value: NaN, expression: str, error: "算式包含无效字符" };
+          }
+          try {
+            var result = new Function("return (" + sanitized + ")")();
+            if (typeof result !== "number" || !isFinite(result)) {
+              return { value: NaN, expression: str, error: "计算结果无效" };
+            }
+            return { value: result, expression: str };
+          } catch (e) {
+            return { value: NaN, expression: str, error: "算式格式错误" };
+          }
+        } else {
+          var num = parseFloat(str);
+          return { value: num, expression: str };
+        }
+      }
+
+      // ==================== 6. 状态提示 ====================
+      function updateStatus() {
+        var type = document.getElementById("scenario-type").value;
+        var sub = document.getElementById("scenario-sub").value;
+        var amountStr = document.getElementById("amount").value.trim();
+        var status = document.getElementById("status-msg");
+        status.className = "status";
+        if (!type) {
+          status.textContent = "请选择场景大类";
+          status.classList.add("info");
+          return;
+        }
+        if (!sub) {
+          status.textContent = "请选择具体情景";
+          status.classList.add("info");
+          return;
+        }
+        if (!amountStr) {
+          status.textContent = "请输入金额";
+          status.classList.add("info");
+          return;
+        }
+        var parsed = parseAmount(amountStr);
+        if (isNaN(parsed.value)) {
+          status.textContent = parsed.error || "请输入有效的金额";
+          status.classList.add("error");
+          return;
+        }
+        var isInvestmentDividend =
+          type === "investment" && sub === "investment_dividend";
+        if (!isInvestmentDividend && parsed.value < 0) {
+          status.textContent = "此场景不支持负数金额";
+          status.classList.add("error");
+          return;
+        }
+        if (parsed.value === 0) {
+          status.textContent = "金额不能为零";
+          status.classList.add("error");
+          return;
+        }
+        var scenario = SCENARIO_MAP[type][sub];
+        status.textContent =
+          "✅ 就绪 — " + scenario.name + " ¥" + formatUserNum(parsed.value);
+        status.classList.add("success");
+      }
+
+      // ==================== 7. 确认记账 ====================
+      function confirmTransaction() {
+        var type = document.getElementById("scenario-type").value;
+        var sub = document.getElementById("scenario-sub").value;
+        var amountStr = document.getElementById("amount").value.trim();
+        var status = document.getElementById("status-msg");
+        if (!type) {
+          status.textContent = "请选择场景大类";
+          status.className = "status error";
+          return;
+        }
+        if (!sub) {
+          status.textContent = "请选择具体情景";
+          status.className = "status error";
+          return;
+        }
+        if (!amountStr) {
+          status.textContent = "请输入金额";
+          status.className = "status error";
+          return;
+        }
+        var parsed = parseAmount(amountStr);
+        if (isNaN(parsed.value)) {
+          status.textContent = parsed.error || "请输入有效的金额";
+          status.className = "status error";
+          return;
+        }
+        var isInvestmentDividend =
+          type === "investment" && sub === "investment_dividend";
+        if (!isInvestmentDividend && parsed.value < 0) {
+          status.textContent = "此场景不支持负数金额";
+          status.className = "status error";
+          return;
+        }
+        if (parsed.value === 0) {
+          status.textContent = "金额不能为零";
+          status.className = "status error";
+          return;
+        }
+        var scenario = SCENARIO_MAP[type][sub];
+        var amount = parsed.value;
+        var effects = calcEffects(scenario, amount);
+        transactionIdCounter++;
+        pendingTransactions.push({
+          id: transactionIdCounter,
+          type: type,
+          sub: sub,
+          amount: amount,
+          displayAmount: formatUserNum(amount),
+          scenarioName: scenario.name,
+          effects: effects,
+          time: new Date().toLocaleTimeString("zh-CN"),
+        });
+        submittedThisSession = false;
+        document.getElementById("amount").value = "";
+        document.getElementById("clear-input").style.display = "none";
+        persistPending();
+        renderPendingList();
+        updateStatus();
+        status.textContent =
+          "✅ 已记录：" + scenario.name + " ¥" + formatUserNum(amount);
+        status.className = "status success";
+        // 清空下拉框和金额，方便连续录入
+        document.getElementById("scenario-type").value = "";
+        document.getElementById("scenario-sub").innerHTML =
+          '<option value="">-- 请先选择大类 --</option>';
+        document.getElementById("scenario-sub").disabled = true;
+        updateStatus();
+      }
+      function calcEffects(scenario, amount) {
+        var effects = [];
+        if (scenario.asset === "cash" && scenario.amount) {
+          var v1 = scenario.amount * amount;
+          effects.push("现金 " + (v1 >= 0 ? "+" : "") + formatUserNum(v1));
+        }
+        if (scenario.asset === "investment" && scenario.amount) {
+          var v2 = scenario.amount * amount;
+          effects.push("投资 " + (v2 >= 0 ? "+" : "") + formatUserNum(v2));
+        }
+        if (scenario.fixedChange) {
+          var v3 = scenario.fixedChange * amount;
+          effects.push("固定资产 " + (v3 >= 0 ? "+" : "") + formatUserNum(v3));
+        }
+        if (scenario.liability && scenario.liabilityDir) {
+          var v4 = scenario.liabilityDir * amount;
+          var label = scenario.liability === "short" ? "短期负债" : "长期负债";
+          effects.push(label + " " + (v4 >= 0 ? "+" : "") + formatUserNum(v4));
+        }
+        if (scenario.profit !== 0) {
+          var v5 = scenario.profit * amount;
+          effects.push("利润 " + (v5 >= 0 ? "+" : "") + formatUserNum(v5));
+        }
+        return effects.join("，");
+      }
+      function applyTransaction(scenario, amount) {
+        var changes = getChangesData();
+        applyScenarioToChanges(scenario, amount, changes);
+        saveChangesData(changes);
+        persistPending();
+      }
+      function applyScenarioToChanges(scenario, amount, changes) {
+        if (scenario.asset === "cash" && scenario.amount) {
+          changes.cash += scenario.amount * amount;
+        } else if (scenario.asset === "investment" && scenario.amount) {
+          changes.investment += scenario.amount * amount;
+        }
+        if (scenario.fixedChange) {
+          changes.fixed += scenario.fixedChange * amount;
+        }
+        if (scenario.liability && scenario.liabilityDir) {
+          if (scenario.liability === "short") {
+            changes.liabilityShort += scenario.liabilityDir * amount;
+          } else if (scenario.liability === "long") {
+            changes.liabilityLong += scenario.liabilityDir * amount;
+          }
+        }
+        if (scenario.profit !== 0) {
+          changes.profit += scenario.profit * amount;
+        }
+      }
+
+      // ==================== 8. 预览/暂存列表 ====================
+      var submittedThisSession = false; // 标记本批暂存是否已提交
+      function submitPending() {
+        if (pendingTransactions.length === 0) {
+          alert("暂无暂存记录可提交。");
+          return;
+        }
+        rebuildAllChanges();
+        calculate();
+        submittedThisSession = true;
+        renderPendingList();
+        document.getElementById("status-msg").textContent =
+          "✅ 已提交 " + pendingTransactions.length + " 条暂存记录到资产负债表";
+        document.getElementById("status-msg").className = "status success";
+      }
+      function renderPendingList() {
+        var container = document.getElementById("preview-content");
+        var clearAllBtn = document.getElementById("clear-all-btn");
+        if (pendingTransactions.length === 0) {
+          container.innerHTML =
+            '<div class="preview-empty">暂无记录，记账后将显示在此处</div>';
+          clearAllBtn.style.display = "none";
+          return;
+        }
+        clearAllBtn.style.display = "inline-block";
+        var submittedLabel = submittedThisSession
+          ? '<div class="submitted-badge" style="margin-bottom:8px;">✅ 已提交到资产负债表</div>'
+          : '<div style="font-size:0.8rem;color:#f59e0b;margin-bottom:8px;">⏳ 尚未提交到资产负债表</div>';
+        var html =
+          submittedLabel +
+          '<table class="preview-table"><thead><tr><th>#</th><th>时间</th><th>场景</th><th>金额</th><th>效果</th><th></th></tr></thead><tbody>';
+        pendingTransactions.forEach(function (t, i) {
+          html +=
+            "<tr><td>" +
+            (i + 1) +
+            "</td><td>" +
+            t.time +
+            "</td><td>" +
+            t.scenarioName +
+            "</td><td>¥" +
+            t.displayAmount +
+            '</td><td style="font-size:0.78rem;">' +
+            t.effects +
+            '</td><td class="preview-row-delete" onclick="deletePending(' +
+            t.id +
+            ')" title="撤销此记录">✕</td></tr>';
+        });
+        html +=
+          "</tbody></table>" +
+          '<button class="submit-btn" onclick="submitPending()">提交到资产负债表</button>';
+        container.innerHTML = html;
+      }
+      function deletePending(id) {
+        var idx = pendingTransactions.findIndex(function (t) {
+          return t.id === id;
+        });
+        if (idx === -1) return;
+        pendingTransactions.splice(idx, 1);
+        submittedThisSession = false;
+        rebuildAllChanges();
+        calculate();
+        renderPendingList();
+        updateStatus();
+      }
+      function clearAllPending() {
+        if (!confirm("确定要清空所有暂存记录吗？这将重置所有本期变动数据。"))
+          return;
+        pendingTransactions = [];
+        transactionIdCounter = 0;
+        submittedThisSession = false;
+        saveChangesData({
+          cash: 0,
+          investment: 0,
+          fixed: 0,
+          liabilityShort: 0,
+          liabilityLong: 0,
+          profit: 0,
+        });
+        persistPending();
+        calculate();
+        renderPendingList();
+        updateStatus();
+      }
+      function rebuildAllChanges() {
+        var changes = {
+          cash: 0,
+          investment: 0,
+          fixed: 0,
+          liabilityShort: 0,
+          liabilityLong: 0,
+          profit: 0,
+        };
+        pendingTransactions.forEach(function (t) {
+          var scenario = SCENARIO_MAP[t.type]
+            ? SCENARIO_MAP[t.type][t.sub]
+            : null;
+          if (!scenario) return;
+          applyScenarioToChanges(scenario, t.amount, changes);
+        });
+        saveChangesData(changes);
+        persistPending();
+      }
+
+      // ==================== 9. 计算与渲染 ====================
+      function calculate() {
+        var baseData = getBaseData();
+        var changes = getChangesData();
+        var end = {
+          cash: baseData.cash + changes.cash,
+          investment: baseData.investment + changes.investment,
+          fixed: baseData.fixed + changes.fixed,
+          liabilityShort: baseData.liabilityShort + changes.liabilityShort,
+          liabilityLong: baseData.liabilityLong + changes.liabilityLong,
+        };
+        var totalAssetsBegin =
+          baseData.cash + baseData.investment + baseData.fixed;
+        var totalLiabilitiesBegin =
+          baseData.liabilityShort + baseData.liabilityLong;
+        var netWorthBegin = totalAssetsBegin - totalLiabilitiesBegin;
+        var totalAssetsEnd = end.cash + end.investment + end.fixed;
+        var totalLiabilitiesEnd = end.liabilityShort + end.liabilityLong;
+        var netWorthEnd = totalAssetsEnd - totalLiabilitiesEnd;
+        document.getElementById("asset-cash-begin").textContent =
+          formatTableNum(baseData.cash);
+        document.getElementById("asset-investment-begin").textContent =
+          formatTableNum(baseData.investment);
+        document.getElementById("asset-fixed-begin").textContent =
+          formatTableNum(baseData.fixed);
+        document.getElementById("total-assets-begin").textContent =
+          formatTableNum(totalAssetsBegin);
+        document.getElementById("liability-short-begin").textContent =
+          formatTableNum(baseData.liabilityShort);
+        document.getElementById("liability-long-begin").textContent =
+          formatTableNum(baseData.liabilityLong);
+        document.getElementById("total-liabilities-begin").textContent =
+          formatTableNum(totalLiabilitiesBegin);
+        document.getElementById("net-worth-begin").textContent =
+          formatTableNum(netWorthBegin);
+        document.getElementById("total-cash-change").textContent = formatChange(
+          changes.cash,
+        );
+        document.getElementById("total-investment-change").textContent =
+          formatChange(changes.investment);
+        document.getElementById("total-fixed-change").textContent =
+          formatChange(changes.fixed);
+        document.getElementById("total-liability-change").textContent =
+          formatChange(changes.liabilityShort + changes.liabilityLong);
+        document.getElementById("total-profit-impact").textContent =
+          formatChange(changes.profit);
+        document.getElementById("asset-cash-end").textContent = formatTableNum(
+          end.cash,
+        );
+        document.getElementById("asset-investment-end").textContent =
+          formatTableNum(end.investment);
+        document.getElementById("asset-fixed-end").textContent = formatTableNum(
+          end.fixed,
+        );
+        document.getElementById("total-assets-end").textContent =
+          formatTableNum(totalAssetsEnd);
+        document.getElementById("liability-short-end").textContent =
+          formatTableNum(end.liabilityShort);
+        document.getElementById("liability-long-end").textContent =
+          formatTableNum(end.liabilityLong);
+        document.getElementById("total-liabilities-end").textContent =
+          formatTableNum(totalLiabilitiesEnd);
+        document.getElementById("net-worth-end").textContent =
+          formatTableNum(netWorthEnd);
+      }
+
+      // ==================== 10. 格式化函数 ====================
+      function formatTableNum(num) {
+        if (isNaN(num) || num === null || num === undefined) return "0.00";
+        return num.toLocaleString("zh-CN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      }
+      function formatUserNum(num) {
+        if (isNaN(num) || num === null || num === undefined) return "0";
+        if (Number.isInteger(num)) {
+          return num.toLocaleString("zh-CN");
+        }
+        return parseFloat(num.toFixed(10)).toLocaleString("zh-CN", {
+          maximumFractionDigits: 10,
+        });
+      }
+      function formatChange(num) {
+        if (isNaN(num) || num === null || num === undefined || num === 0) {
+          return "0.00";
+        }
+        var sign = num > 0 ? "+" : "";
+        return sign + formatTableNum(num);
+      }
+
+      // ==================== 11. 数据持久化 ====================
+      function getBaseData() {
+        var stored = localStorage.getItem("finance_BaseData");
+        if (stored) {
+          try {
+            return JSON.parse(stored);
+          } catch (e) {}
+        }
+        return {
+          cash: 0,
+          investment: 0,
+          fixed: 0,
+          liabilityShort: 0,
+          liabilityLong: 0,
+        };
+      }
+      function saveBaseData(data) {
+        localStorage.setItem("finance_BaseData", JSON.stringify(data));
+      }
+      function getChangesData() {
+        var stored = localStorage.getItem("finance_Changes");
+        if (stored) {
+          try {
+            return JSON.parse(stored);
+          } catch (e) {}
+        }
+        return {
+          cash: 0,
+          investment: 0,
+          fixed: 0,
+          liabilityShort: 0,
+          liabilityLong: 0,
+          profit: 0,
+        };
+      }
+      function saveChangesData(data) {
+        localStorage.setItem("finance_Changes", JSON.stringify(data));
+      }
+      function restoreData() {
+        var storedPending = localStorage.getItem("finance_Pending");
+        if (storedPending) {
+          try {
+            pendingTransactions = JSON.parse(storedPending);
+            if (pendingTransactions.length > 0) {
+              transactionIdCounter = Math.max.apply(
+                null,
+                pendingTransactions.map(function (t) {
+                  return t.id;
+                }),
+              );
+            }
+          } catch (e) {
+            pendingTransactions = [];
+          }
+        }
+        var beginTime = localStorage.getItem("finance_BeginTime");
+        if (beginTime) {
+          document.getElementById("period-begin-time").textContent = beginTime;
+        }
+      }
+      function persistPending() {
+        localStorage.setItem(
+          "finance_Pending",
+          JSON.stringify(pendingTransactions),
+        );
+        var beginEl = document.getElementById("period-begin-time");
+        if (beginEl.textContent !== "未设定") {
+          localStorage.setItem("finance_BeginTime", beginEl.textContent);
+        }
+      }
+
+      // ==================== 12. 期初时间管理 ====================
+      function updatePeriodDisplay() {
+        var beginEl = document.getElementById("period-begin-time");
+        var currentEl = document.getElementById("period-current-time");
+        var diffEl = document.getElementById("period-diff");
+        var diffText = document.getElementById("period-diff-text");
+        var now = new Date();
+        currentEl.textContent = now.toLocaleString("zh-CN");
+        var beginTimeStr = localStorage.getItem("finance_BeginTime");
+        if (beginTimeStr) {
+          beginEl.textContent = beginTimeStr;
+          try {
+            var beginDate = new Date(beginTimeStr);
+            if (!isNaN(beginDate.getTime())) {
+              var diffMs = now.getTime() - beginDate.getTime();
+              var diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+              var diffHours = Math.floor(
+                (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+              );
+              var diffMins = Math.floor(
+                (diffMs % (1000 * 60 * 60)) / (1000 * 60),
+              );
+              var diffStr = "";
+              if (diffDays > 0) diffStr += diffDays + "天";
+              if (diffHours > 0) diffStr += diffHours + "小时";
+              if (diffDays === 0) diffStr += diffMins + "分钟";
+              diffText.textContent = diffStr || "刚刚";
+              diffEl.style.display = "inline";
+            }
+          } catch (e) {
+            diffEl.style.display = "none";
+          }
+        } else {
+          beginEl.textContent = "未设定";
+          diffEl.style.display = "none";
+        }
+      }
+
+      // ==================== 13. 打印报表（弹窗选择格式） ====================
+      function exportReport() {
+        openModal("print-choice-modal");
+      }
+
+      function doExportPNG() {
+        closeModal("print-choice-modal");
+        var baseData = getBaseData(),
+          changes = getChangesData();
+        var end = {
+          cash: baseData.cash + changes.cash,
+          investment: baseData.investment + changes.investment,
+          fixed: baseData.fixed + changes.fixed,
+          liabilityShort: baseData.liabilityShort + changes.liabilityShort,
+          liabilityLong: baseData.liabilityLong + changes.liabilityLong,
+        };
+        var totalAssetsBegin =
+          baseData.cash + baseData.investment + baseData.fixed;
+        var totalLiabilitiesBegin =
+          baseData.liabilityShort + baseData.liabilityLong;
+        var netWorthBegin = totalAssetsBegin - totalLiabilitiesBegin;
+        var totalAssetsEnd = end.cash + end.investment + end.fixed;
+        var totalLiabilitiesEnd = end.liabilityShort + end.liabilityLong;
+        var netWorthEnd = totalAssetsEnd - totalLiabilitiesEnd;
+        var beginTimeStr =
+          document.getElementById("period-begin-time").textContent;
+        var currentTimeStr = document.getElementById(
+          "period-current-time",
+        ).textContent;
+
+        var canvas = document.createElement("canvas"),
+          ctx = canvas.getContext("2d");
+        var W = 680,
+          rowH = 26,
+          col1X = 20,
+          col2X = 380,
+          colW = 280,
+          rows = [];
+        var FONT = "14px -apple-system, BlinkMacSystemFont, sans-serif";
+        var FONT_BOLD =
+          "bold 14px -apple-system, BlinkMacSystemFont, sans-serif";
+        var FONT_SMALL = "12px -apple-system, BlinkMacSystemFont, sans-serif";
+        function addRow(label, value, opts) {
+          rows.push(Object.assign({ label: label, value: value }, opts));
+        }
+
+        addRow("资产负债盘点表", "", {
+          bold: true,
+          section: true,
+          color: "#059669",
+        });
+        addRow("期初: " + beginTimeStr + "  |  本期: " + currentTimeStr, "", {
+          small: true,
+          color: "#6b7280",
+        });
+        addRow("", "", { spacer: true });
+        addRow("资产", "", { section: true });
+        addRow("期初流动资产 (现金/存款)", formatTableNum(baseData.cash));
+        addRow("期初投资资产 (股票/基金)", formatTableNum(baseData.investment));
+        addRow("期初固定资产 (房产/车辆)", formatTableNum(baseData.fixed));
+        addRow("期初资产总计", formatTableNum(totalAssetsBegin), {
+          bold: true,
+          bg: "#e5e7eb",
+        });
+        addRow("负债", "", { section: true });
+        addRow(
+          "期初短期负债 (信用卡/花呗)",
+          formatTableNum(baseData.liabilityShort),
+        );
+        addRow(
+          "期初长期负债 (房贷/车贷)",
+          formatTableNum(baseData.liabilityLong),
+        );
+        addRow("期初负债总计", formatTableNum(totalLiabilitiesBegin), {
+          bold: true,
+          bg: "#e5e7eb",
+        });
+        addRow("期初净资产", formatTableNum(netWorthBegin), {
+          bold: true,
+          bg: "#dbeafe",
+        });
+        addRow("本期变动", "", { section: true, bg: "#d1fae5" });
+        addRow("本期现金变动", formatChange(changes.cash));
+        addRow("本期投资变动", formatChange(changes.investment));
+        addRow("本期固定资产变动", formatChange(changes.fixed));
+        addRow(
+          "本期负债变动",
+          formatChange(changes.liabilityShort + changes.liabilityLong),
+        );
+        addRow("本期利润影响", formatChange(changes.profit));
+        addRow("期末余额", "", { section: true, bg: "#d1fae5" });
+        addRow("期末流动资产", formatTableNum(end.cash), { bold: true });
+        addRow("期末投资资产", formatTableNum(end.investment), { bold: true });
+        addRow("期末固定资产", formatTableNum(end.fixed), { bold: true });
+        addRow("期末资产总计", formatTableNum(totalAssetsEnd), {
+          bold: true,
+          bg: "#e5e7eb",
+        });
+        addRow("期末短期负债", formatTableNum(end.liabilityShort), {
+          bold: true,
+        });
+        addRow("期末长期负债", formatTableNum(end.liabilityLong), {
+          bold: true,
+        });
+        addRow("期末负债总计", formatTableNum(totalLiabilitiesEnd), {
+          bold: true,
+          bg: "#e5e7eb",
+        });
+        addRow("期末净资产", formatTableNum(netWorthEnd), {
+          bold: true,
+          bg: "#dbeafe",
+        });
+
+        var H = (rows.length + 0.5) * rowH + 20;
+        canvas.width = W;
+        canvas.height = H;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, W, H);
+        rows.forEach(function (r, i) {
+          var y = 20 + (i + 0.5) * rowH;
+          if (r.section) {
+            ctx.fillStyle = r.bg || "#f9fafb";
+            ctx.fillRect(0, y - rowH / 2 + 2, W, rowH);
+          }
+          if (r.bg && !r.section) {
+            ctx.fillStyle = r.bg;
+            ctx.fillRect(0, y - rowH / 2 + 2, W, rowH);
+          }
+          if (r.spacer) return;
+          ctx.fillStyle = r.color || "#1f2937";
+          ctx.font = r.small ? FONT_SMALL : r.bold ? FONT_BOLD : FONT;
+          ctx.textBaseline = "middle";
+          if (r.section) {
+            ctx.textAlign = "center";
+            ctx.fillText(r.label, W / 2, y);
+          } else {
+            ctx.textAlign = "left";
+            ctx.fillText(r.label, col1X, y);
+            ctx.textAlign = "right";
+            ctx.fillText(r.value, col2X + colW, y);
+          }
+        });
+        ctx.strokeStyle = "#e5e7eb";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(col2X - 10, 0);
+        ctx.lineTo(col2X - 10, H);
+        ctx.stroke();
+
+        canvas.toBlob(function (blob) {
+          var now = new Date(),
+            url = URL.createObjectURL(blob),
+            a = document.createElement("a");
+          a.href = url;
+          a.download =
+            "资产负债表_" +
+            now.toISOString().replace(/[:.]/g, "-").slice(0, 10) +
+            ".png";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, "image/png");
+      }
+
+      function doExportPDF() {
+        closeModal("print-choice-modal");
+        var baseData = getBaseData(),
+          changes = getChangesData();
+        var end = {
+          cash: baseData.cash + changes.cash,
+          investment: baseData.investment + changes.investment,
+          fixed: baseData.fixed + changes.fixed,
+          liabilityShort: baseData.liabilityShort + changes.liabilityShort,
+          liabilityLong: baseData.liabilityLong + changes.liabilityLong,
+        };
+        var totalAssetsBegin =
+          baseData.cash + baseData.investment + baseData.fixed;
+        var totalLiabilitiesBegin =
+          baseData.liabilityShort + baseData.liabilityLong;
+        var netWorthBegin = totalAssetsBegin - totalLiabilitiesBegin;
+        var totalAssetsEnd = end.cash + end.investment + end.fixed;
+        var totalLiabilitiesEnd = end.liabilityShort + end.liabilityLong;
+        var netWorthEnd = totalAssetsEnd - totalLiabilitiesEnd;
+        var beginTimeStr =
+          document.getElementById("period-begin-time").textContent;
+        var currentTimeStr = document.getElementById(
+          "period-current-time",
+        ).textContent;
+
+        function tr(label, value, cls) {
+          return (
+            "<tr" +
+            (cls ? ' class="' + cls + '"' : "") +
+            "><td>" +
+            label +
+            "</td><td>" +
+            value +
+            "</td></tr>"
+          );
+        }
+        function sec(label) {
+          return '<tr><td colspan="2" class="sec">' + label + "</td></tr>";
+        }
+
+        var html =
+          "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>资产负债表</title><style>" +
+          "body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:30px;color:#1f2937;}" +
+          "h2{text-align:center;color:#059669;border-bottom:2px solid #059669;padding-bottom:10px;}" +
+          ".info{text-align:center;color:#6b7280;font-size:0.85rem;margin-bottom:16px;}" +
+          "table{width:100%;border-collapse:collapse;font-size:0.9rem;}" +
+          "th,td{border:1px solid #d1d5db;padding:8px 12px;text-align:left;}" +
+          ".sec{background:#f9fafb;font-weight:bold;text-align:center;color:#4b5563;}" +
+          ".bold{background:#e5e7eb;font-weight:bold;}.blue{background:#dbeafe;font-weight:bold;}" +
+          ".green{background:#d1fae5;font-weight:bold;text-align:center;}" +
+          "@media print{body{padding:0;}}</style></head><body>" +
+          "<h2>资产负债盘点表</h2>" +
+          '<div class="info">期初: ' +
+          beginTimeStr +
+          " &nbsp;|&nbsp; 本期: " +
+          currentTimeStr +
+          "</div>" +
+          "<table>" +
+          sec("资产") +
+          tr("期初流动资产 (现金/存款)", formatTableNum(baseData.cash)) +
+          tr("期初投资资产 (股票/基金)", formatTableNum(baseData.investment)) +
+          tr("期初固定资产 (房产/车辆)", formatTableNum(baseData.fixed)) +
+          tr("期初资产总计", formatTableNum(totalAssetsBegin), "bold") +
+          sec("负债") +
+          tr(
+            "期初短期负债 (信用卡/花呗)",
+            formatTableNum(baseData.liabilityShort),
+          ) +
+          tr(
+            "期初长期负债 (房贷/车贷)",
+            formatTableNum(baseData.liabilityLong),
+          ) +
+          tr("期初负债总计", formatTableNum(totalLiabilitiesBegin), "bold") +
+          tr("期初净资产", formatTableNum(netWorthBegin), "blue") +
+          sec("本期变动") +
+          tr("本期现金变动", formatChange(changes.cash)) +
+          tr("本期投资变动", formatChange(changes.investment)) +
+          tr("本期固定资产变动", formatChange(changes.fixed)) +
+          tr(
+            "本期负债变动",
+            formatChange(changes.liabilityShort + changes.liabilityLong),
+          ) +
+          tr("本期利润影响", formatChange(changes.profit)) +
+          sec("期末余额") +
+          tr("期末流动资产", formatTableNum(end.cash), "bold") +
+          tr("期末投资资产", formatTableNum(end.investment), "bold") +
+          tr("期末固定资产", formatTableNum(end.fixed), "bold") +
+          tr("期末资产总计", formatTableNum(totalAssetsEnd), "bold") +
+          tr("期末短期负债", formatTableNum(end.liabilityShort), "bold") +
+          tr("期末长期负债", formatTableNum(end.liabilityLong), "bold") +
+          tr("期末负债总计", formatTableNum(totalLiabilitiesEnd), "bold") +
+          tr("期末净资产", formatTableNum(netWorthEnd), "blue") +
+          "</table></body></html>";
+
+        var w = window.open("", "_blank");
+        w.document.write(html);
+        w.document.close();
+        setTimeout(function () {
+          w.print();
+        }, 500);
+      }
+
+      // ==================== 14. 通用弹窗 ====================
+      function openModal(id) {
+        document.getElementById(id).classList.add("active");
+      }
+      function closeModal(id) {
+        document.getElementById(id).classList.remove("active");
+      }
+      document.addEventListener("click", function (e) {
+        if (
+          e.target.classList.contains("modal-overlay") &&
+          e.target.classList.contains("active")
+        ) {
+          closeModal(e.target.id);
+        }
+      });
+
+      // ==================== 15. 保存快照（弹窗选择方式） ====================
+      function getSnapshots() {
+        try {
+          return JSON.parse(localStorage.getItem("finance_Snapshots") || "[]");
+        } catch (e) {
+          return [];
+        }
+      }
+      function saveSnapshots(list) {
+        localStorage.setItem("finance_Snapshots", JSON.stringify(list));
+      }
+
+      function saveSnapshot() {
+        openModal("save-choice-modal");
+      }
+
+      function doSaveSnapshot(mode) {
+        closeModal("save-choice-modal");
+        var now = new Date();
+        var beginTimeStr =
+          localStorage.getItem("finance_BeginTime") ||
+          now.toLocaleString("zh-CN");
+        var currentTimeStr = now.toLocaleString("zh-CN");
+        var snapshot = {
+          id: "snap_" + now.getTime(),
+          version: "1.0",
+          type: "finance-snapshot",
+          beginTime: beginTimeStr,
+          endTime: currentTimeStr,
+          savedAt: now.toISOString(),
+          label: now.toLocaleString("zh-CN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            weekday: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          baseData: getBaseData(),
+          changes: getChangesData(),
+          pending: pendingTransactions,
+        };
+
+        var msg = "";
+        if (mode === "local" || mode === "both") {
+          var snapshots = getSnapshots();
+          snapshots.unshift(snapshot);
+          if (snapshots.length > 50) snapshots.length = 50;
+          saveSnapshots(snapshots);
+          msg += "已保存到浏览器缓存";
+        }
+        if (mode === "json" || mode === "both") {
+          var blob = new Blob([JSON.stringify(snapshot, null, 2)], {
+            type: "application/json",
+          });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download =
+            "财务快照_" +
+            now.toISOString().replace(/[:.]/g, "-").slice(0, 19) +
+            ".json";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          if (msg) msg += "，同时已下载JSON文件";
+          else msg += "已下载JSON文件";
+        }
+        msg += "。";
+
+        if (
+          confirm(
+            "💾 快照已保存！\n\n" +
+              msg +
+              "\n\n是否开始新的一期？\n（期末数据将转为新时期初，本期变动将清零）",
+          )
+        ) {
+          var end = {
+            cash: snapshot.baseData.cash + (snapshot.changes.cash || 0),
+            investment:
+              snapshot.baseData.investment + (snapshot.changes.investment || 0),
+            fixed: snapshot.baseData.fixed + (snapshot.changes.fixed || 0),
+            liabilityShort:
+              snapshot.baseData.liabilityShort +
+              (snapshot.changes.liabilityShort || 0),
+            liabilityLong:
+              snapshot.baseData.liabilityLong +
+              (snapshot.changes.liabilityLong || 0),
+          };
+          saveBaseData(end);
+          saveChangesData({
+            cash: 0,
+            investment: 0,
+            fixed: 0,
+            liabilityShort: 0,
+            liabilityLong: 0,
+            profit: 0,
+          });
+          pendingTransactions = [];
+          transactionIdCounter = 0;
+          localStorage.removeItem("finance_Pending");
+          localStorage.setItem("finance_BeginTime", currentTimeStr);
+          updatePeriodDisplay();
+          calculate();
+          renderPendingList();
+          updateStatus();
+          alert("✅ 新一期已开始！");
+        }
+      }
+
+      // ==================== 16. 历史存档 ====================
+      function openHistoryModal() {
+        openModal("history-modal");
+        renderHistoryList();
+      }
+      function closeHistoryModal() {
+        closeModal("history-modal");
+        startingNewPeriod = false;
+        overwriteMode = false;
+      }
+
+      function renderHistoryList() {
+        var listEl = document.getElementById("history-list");
+        var snapshots = getSnapshots();
+        if (snapshots.length === 0) {
+          listEl.innerHTML =
+            '<div class="modal-empty">📭 暂无存档记录<br><small>保存快照后，快照将显示在此处</small></div>';
+          return;
+        }
+        var html = "";
+        if (overwriteMode) {
+          html = '<div style="font-size:0.85rem;color:#6b7280;margin-bottom:12px;text-align:center;">📝 选择要覆盖的存档（点击选择）</div>';
+        }
+        snapshots.forEach(function (snap) {
+          var netWorth =
+            (snap.baseData.cash || 0) +
+            (snap.baseData.investment || 0) +
+            (snap.baseData.fixed || 0) -
+            (snap.baseData.liabilityShort || 0) -
+            (snap.baseData.liabilityLong || 0);
+          var changeTotal =
+            (snap.changes.cash || 0) +
+            (snap.changes.investment || 0) +
+            (snap.changes.fixed || 0) -
+            (snap.changes.liabilityShort || 0) -
+            (snap.changes.liabilityLong || 0);
+          if (overwriteMode) {
+            html +=
+              '<div class="snapshot-list-item" onclick="overwriteSnapshot(\'' +
+              snap.id +
+              '\')"><div class="info"><div class="period">' +
+              (snap.label || snap.savedAt) +
+              '</div><div class="meta">期末: ' +
+              (snap.endTime || "—") +
+              "</div></div></div>";
+          } else {
+            html +=
+              '<div class="snapshot-list-item" onclick="loadSnapshot(\'' +
+              snap.id +
+              '\')"><div class="info"><div class="period">' +
+              (snap.label || snap.savedAt) +
+              '</div><div class="meta">期初: ' +
+              (snap.beginTime || "—") +
+              " → 期末: " +
+              (snap.endTime || "—") +
+              " | 净资产: ¥" +
+              formatTableNum(netWorth + changeTotal) +
+              '</div></div><button class="delete-snapshot" onclick="event.stopPropagation();deleteSnapshot(\'' +
+              snap.id +
+              "')\">删除</button></div>";
+          }
+        });
+        listEl.innerHTML = html;
+      }
+
+      function loadSnapshot(id) {
+        var snapshots = getSnapshots();
+        var snap = snapshots.find(function (s) {
+          return s.id === id;
+        });
+        if (!snap) return;
+        if (
+          !confirm(
+            "🗄️ 加载历史存档\n\n存档时间：" +
+              (snap.label || snap.savedAt) +
+              "\n期初：" +
+              (snap.beginTime || "—") +
+              "\n期末：" +
+              (snap.endTime || "—") +
+              "\n\n加载后当前数据将被覆盖。确定要加载吗？",
+          )
+        )
+          return;
+        if (snap.baseData && snap.changes) {
+          var newBase = {
+            cash: (snap.baseData.cash || 0) + (snap.changes.cash || 0),
+            investment:
+              (snap.baseData.investment || 0) + (snap.changes.investment || 0),
+            fixed: (snap.baseData.fixed || 0) + (snap.changes.fixed || 0),
+            liabilityShort:
+              (snap.baseData.liabilityShort || 0) +
+              (snap.changes.liabilityShort || 0),
+            liabilityLong:
+              (snap.baseData.liabilityLong || 0) +
+              (snap.changes.liabilityLong || 0),
+          };
+          saveBaseData(newBase);
+        } else if (snap.baseData) {
+          saveBaseData(snap.baseData);
+        }
+        if (snap.endTime) {
+          localStorage.setItem("finance_BeginTime", snap.endTime);
+        }
+        saveChangesData({
+          cash: 0,
+          investment: 0,
+          fixed: 0,
+          liabilityShort: 0,
+          liabilityLong: 0,
+          profit: 0,
+        });
+        pendingTransactions = [];
+        transactionIdCounter = 0;
+        localStorage.removeItem("finance_Pending");
+        closeHistoryModal();
+        updatePeriodDisplay();
+        calculate();
+        renderPendingList();
+        updateStatus();
+        alert("✅ 存档加载成功！");
+        if (startingNewPeriod) {
+          startingNewPeriod = false;
+          transitionToFormView();
+        }
+        if (document.getElementById("start-section").style.display !== "none") {
+          transitionToFormView();
+        }
+      }
+
+      function deleteSnapshot(id) {
+        if (!confirm("确定要删除这条存档记录吗？此操作不可撤销。")) return;
+        var snapshots = getSnapshots();
+        var filtered = snapshots.filter(function (s) {
+          return s.id !== id;
+        });
+        saveSnapshots(filtered);
+        renderHistoryList();
+      }
+
+      // ==================== 17. 重置本期 ====================
+      function resetPeriod() {
+        if (
+          !confirm(
+            "🔄 重置本期\n\n确定要清空本期所有输入数据吗？\n期初数据将保留，仅清除本期变动和暂存记录。\n\n确定要重置吗？",
+          )
+        )
+          return;
+        pendingTransactions = [];
+        transactionIdCounter = 0;
+        saveChangesData({
+          cash: 0,
+          investment: 0,
+          fixed: 0,
+          liabilityShort: 0,
+          liabilityLong: 0,
+          profit: 0,
+        });
+        localStorage.removeItem("finance_Pending");
+        calculate();
+        renderPendingList();
+        updateStatus();
+        alert("✅ 本期数据已重置，期初数据保持不变。");
+      }
+
+      // 从JSON文件导入快照（历史存档弹窗中调用）
+      function importSnapshot(event) {
+        var file = event.target.files[0];
+        if (!file) return;
+        if (!confirm("📁 导入JSON快照将覆盖当前数据。确定要继续吗？")) {
+          event.target.value = "";
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            var snapshot = JSON.parse(e.target.result);
+            if (snapshot.type !== "finance-snapshot") {
+              alert("⚠ 文件格式不正确：不是有效的财务快照文件。");
+              return;
+            }
+            var snapshots = getSnapshots();
+            snapshot.id = "snap_imported_" + Date.now();
+            snapshot.label = "📁 导入 — " + new Date().toLocaleString("zh-CN");
+            if (!snapshot.endTime) snapshot.endTime = snapshot.savedAt || "";
+            if (!snapshot.beginTime)
+              snapshot.beginTime =
+                localStorage.getItem("finance_BeginTime") || "";
+            snapshots.unshift(snapshot);
+            if (snapshots.length > 50) snapshots.length = 50;
+            saveSnapshots(snapshots);
+            if (snapshot.endTime) {
+              localStorage.setItem("finance_BeginTime", snapshot.endTime);
+            }
+            if (snapshot.baseData && snapshot.changes) {
+              var newBase = {
+                cash:
+                  (snapshot.baseData.cash || 0) + (snapshot.changes.cash || 0),
+                investment:
+                  (snapshot.baseData.investment || 0) +
+                  (snapshot.changes.investment || 0),
+                fixed:
+                  (snapshot.baseData.fixed || 0) +
+                  (snapshot.changes.fixed || 0),
+                liabilityShort:
+                  (snapshot.baseData.liabilityShort || 0) +
+                  (snapshot.changes.liabilityShort || 0),
+                liabilityLong:
+                  (snapshot.baseData.liabilityLong || 0) +
+                  (snapshot.changes.liabilityLong || 0),
+              };
+              saveBaseData(newBase);
+            } else if (snapshot.baseData) {
+              saveBaseData(snapshot.baseData);
+            }
+            saveChangesData({
+              cash: 0,
+              investment: 0,
+              fixed: 0,
+              liabilityShort: 0,
+              liabilityLong: 0,
+              profit: 0,
+            });
+            pendingTransactions = [];
+            transactionIdCounter = 0;
+            localStorage.removeItem("finance_Pending");
+            updatePeriodDisplay();
+            calculate();
+            renderPendingList();
+            renderHistoryList();
+            updateStatus();
+            alert("✅ 快照导入成功！");
+            if (startingNewPeriod) {
+              startingNewPeriod = false;
+              transitionToFormView();
+            }
+            if (document.getElementById("start-section").style.display !== "none") {
+              transitionToFormView();
+            }
+          } catch (err) {
+            alert("⚠ 文件解析失败：" + err.message);
+          }
+        };
+        reader.readAsText(file);
+        event.target.value = "";
+      }
+
+      // ==================== 18. 申请增加 ====================
+      function requestAdd(type) {
+        var suggestion = prompt(
+          "📝 申请增加" +
+            type +
+            "\n\n请填写您希望增加的" +
+            type +
+            "名称及简要说明：\n（您的建议将被记录，后续版本会考虑添加）",
+        );
+        if (suggestion && suggestion.trim()) {
+          var requests = JSON.parse(
+            localStorage.getItem("finance_Requests") || "[]",
+          );
+          requests.push({
+            type: type,
+            content: suggestion.trim(),
+            time: new Date().toISOString(),
+          });
+          localStorage.setItem("finance_Requests", JSON.stringify(requests));
+          alert(
+            "✅ 感谢您的建议！\n\n您申请的" +
+              type +
+              "「" +
+              suggestion.trim() +
+              "」已记录。",
+          );
+        }
+      }
+
+      // ==================== 19. 页面卸载前保存 ====================
+      window.addEventListener("beforeunload", function () {
+        persistPending();
+      });
+    </script>
+  </body>
+</html>
