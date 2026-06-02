@@ -254,7 +254,7 @@ baseData (期初余额)              changes (本期变动)            end (期�
 
 ```
 finance/
-├── Scenario-input finance.html   # 主应用（单文件，~2200 行）
+├── index.html   # 主应用（单文件，~2200 行）
 ├── README.md                     # 本文档
 └── old/
     └── finance.html              # 旧版（联动版，手动录入）
