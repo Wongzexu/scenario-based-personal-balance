@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/版本-1.0.3-emerald?style=flat-square" alt="version" />
+  <img src="https://img.shields.io/badge/版本-1.1.1-emerald?style=flat-square" alt="version" />
   <img src="https://img.shields.io/badge/构建-纯前端-059669?style=flat-square" alt="build" />
   <img src="https://img.shields.io/badge/许可-MIT-8b5cf6?style=flat-square" alt="license" />
   <img src="https://img.shields.io/badge/浏览器-现代浏览器-6366f1?style=flat-square" alt="browsers" />
@@ -254,7 +254,7 @@ baseData (期初余额)              changes (本期变动)            end (期�
 
 ```
 finance/
-├── index.html   # 主应用（单文件，~2200 行）
+├── index.html   # 主应用（单文件，~3500 行）
 ├── README.md                     # 本文档
 └── old/
     └── finance.html              # 旧版（联动版，手动录入）
@@ -268,13 +268,14 @@ finance/
 
 ## 📋 版本历史
 
-| 版本      | 日期 | 说明                                            |
-| --------- | ---- | ----------------------------------------------- |
-| **1.0.3** | —    | 开始本期流程、暂存确认、快照覆盖、新的一期重置  |
-| **1.0.2** | —    | 历史存档弹窗、快照导入导出、打印/PNG导出        |
-| **1.0.1** | —    | 计算器模式、情景映射完善、UI 优化               |
-| **1.0**   | —    | 情景记账核心功能：场景选择 + 自动联动资产负债表 |
-| 旧版      | —    | 联动版 — 手动填写 11 个字段，表一驱动表二       |
+| 版本        | 日期       | 说明                                                         |
+| ----------- | ---------- | ------------------------------------------------------------ |
+| **v1.1.1**  | 2026-06-03 | 会话系统、快照双模式加载、快照覆盖、模态框返回、Toast 通知、浮点精度修复、UI 全面打磨 |
+| **v1.0.3**  | —          | 开始本期流程、暂存确认、快照覆盖、新的一期重置                |
+| **v1.0.2**  | —          | 历史存档弹窗、快照导入导出、打印/PNG导出                      |
+| **v1.0.1**  | —          | 计算器模式、情景映射完善、UI 优化                             |
+| **v1.0**    | —          | 情景记账核心功能：场景选择 + 自动联动资产负债表                |
+| 旧版        | —          | 联动版 — 手动填写 11 个字段，表一驱动表二                     |
 
 ---
 
