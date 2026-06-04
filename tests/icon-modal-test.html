@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Icon + Modal 测试页面</title>
+<style>
+  /* ========== 设计系统 ========== */
+  :root {
+    --primary: #0d9488; --primary-light: #ccfbf1; --primary-dark: #0f766e;
+    --danger: #ef4444; --danger-light: #fef2f2;
+    --warning: #f59e0b; --warning-light: #fffbeb;
+    --success: #10b981; --success-light: #ecfdf5;
+    --info: #6366f1; --info-light: #eef2ff;
+    --gray-50: #fafafa; --gray-100: #f5f5f4; --gray-200: #e7e5e4;
+    --gray-400: #a8a29e; --gray-500: #78716c; --gray-600: #57534e;
+    --gray-700: #44403c; --gray-800: #292524;
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+    --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.03);
+    --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.06);
+    --shadow-lg: 0 20px 40px -8px rgba(0,0,0,0.12);
+    --shadow-xl: 0 32px 64px -12px rgba(0,0,0,0.18);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  body {
+    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--gray-50); color: var(--gray-700); margin: 0; padding: 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1 { font-size: 1.1rem; color: var(--gray-800); margin: 32px 0 12px; }
+  h1:first-child { margin-top: 0; }
+  h2 { font-size: 0.95rem; color: var(--gray-600); margin: 0 0 12px; }
+  .test-section {
+    background: #fff; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px;
+  }
+  .test-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 10px; }
+  .test-label { font-size: 0.78rem; color: var(--gray-400); min-width: 100px; }
+
+  /* ========== Inline SVG 图标 ========== */
+  .icon-svg { display: inline-block; vertical-align: text-bottom; flex-shrink: 0; }
+
+  /* ========== 按钮 ========== */
+  .btn { background: var(--primary); color: #fff; border: none; padding: 10px 20px;
+    border-radius: var(--radius-sm); font-size: 0.9rem; cursor: pointer; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { background: var(--primary-dark); }
+  .btn-danger { background: var(--danger); }
+  .btn-danger:hover { background: #dc2626; }
+  .snapshot-btn {
+    font-size: 0.8rem; padding: 7px 16px; border: 1.5px solid var(--gray-200);
+    border-radius: 20px; cursor: pointer; background: #fff; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 5px;
+    color: var(--gray-600); transition: all 0.15s var(--ease-out);
+  }
+  .snapshot-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  .snapshot-btn.primary { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .snapshot-btn.primary:hover { background: var(--primary); color: #fff; }
+  .snapshot-btn.primary:hover .icon-svg { fill: #fff; }
+  .snapshot-btn.reset { border-color: var(--warning); color: #b45309; background: var(--warning-light); }
+  .snapshot-btn.reset:hover { background: var(--warning); color: #fff; }
+  .snapshot-btn.reset:hover .icon-svg { fill: #fff; }
+  .btn:hover .icon-svg, .btn-danger:hover .icon-svg { fill: #fff; }
+
+  .choice-btn {
+    display: flex; align-items: center; gap: 14px; padding: 16px 20px;
+    border: 2px solid var(--gray-200); border-radius: var(--radius-md);
+    background: #fff; cursor: pointer; font-size: 0.93rem; max-width: 400px;
+    transition: all 0.15s var(--ease-out);
+  }
+  .choice-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: translateX(3px); }
+  .choice-btn .choice-icon {
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    background: var(--gray-50); border-radius: var(--radius-sm);
+  }
+  .choice-btn:hover .choice-icon { background: var(--primary-light); }
+
+  /* ========== 模态框 ========== */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 1000; justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 0.25s var(--ease-out);
+  }
+  .modal-overlay.active { display: flex; opacity: 1; }
+  .modal-dialog {
+    background: #fff; border-radius: var(--radius-lg);
+    width: 90%; max-width: 480px; max-height: 70vh;
+    display: flex; flex-direction: column;
+    box-shadow: var(--shadow-xl);
+    transform: translateY(16px) scale(0.97);
+    transition: transform 0.25s var(--ease-out);
+  }
+  .modal-overlay.active .modal-dialog { transform: translateY(0) scale(1); }
+  .modal-header {
+    display: flex; align-items: center; gap: 6px;
+    padding: 14px 18px; border-bottom: 1px solid var(--gray-100);
+    background: var(--gray-50); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .modal-header h3 { margin: 0; font-size: 1rem; color: var(--gray-800); font-weight: 700; flex: 1; line-height: 1.4; }
+  .modal-close {
+    background: none; border: none; cursor: pointer; color: var(--gray-400);
+    padding: 4px; border-radius: var(--radius-sm); flex-shrink: 0; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: var(--gray-200); color: var(--gray-700); }
+  .modal-body { padding: 20px; overflow-y: auto; }
+  .modal-back-btn {
+    background: none; border: none; font-size: 0.78rem; cursor: pointer;
+    color: var(--gray-400); padding: 4px 8px; border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0; line-height: 1;
+  }
+  .modal-back-btn:hover { color: var(--primary); background: var(--primary-light); }
+
+  /* ========== 状态/Toast ========== */
+  .status { font-size: 0.82rem; padding: 8px 14px; border-radius: var(--radius-sm); font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
+  .status.success { color: #065f46; background: #ecfdf5; }
+  .status.error { color: #b91c1c; background: #fef2f2; }
+  .status.warning { color: #92400e; background: #fffbeb; }
+  #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast { padding: 10px 20px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500; box-shadow: var(--shadow-lg);
+    animation: toastIn 0.3s var(--ease-out); pointer-events: auto; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+  .toast.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+  .toast.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<h1>🧪 Icon + Modal 集成测试 — Inline SVG 方案</h1>
+
+<!-- 0. 方案验证 -->
+<div class="test-section">
+  <h2>0. 方案验证 — data-icon 自动替换</h2>
+  <div class="test-row">
+    <span class="test-label">data-icon</span>
+    <span data-icon="calculator" data-size="24"></span>
+    <span data-icon="wallet" data-size="24"></span>
+    <span data-icon="save" data-size="24"></span>
+    <span style="color:var(--success);font-size:0.78rem;">← inline SVG，fill=currentColor</span>
+  </div>
+</div>
+
+<!-- 1. 尺寸 -->
+<div class="test-section">
+  <h2>1. 图标尺寸 (16 / 20 / 24 / 32 / 64)</h2>
+  <div class="test-row">
+    <span data-icon="calculator" data-size="16"></span>
+    <span data-icon="calculator" data-size="20"></span>
+    <span data-icon="calculator" data-size="24"></span>
+    <span data-icon="calculator" data-size="32"></span>
+    <span data-icon="calculator" data-size="64"></span>
+  </div>
+</div>
+
+<!-- 2. 颜色 -->
+<div class="test-section">
+  <h2>2. 颜色继承 (fill=currentColor)</h2>
+  <div class="test-row" style="color: var(--primary);">
+    <span class="test-label">primary</span>
+    <span data-icon="wallet" data-size="20"></span> 工资收入
+  </div>
+  <div class="test-row" style="color: var(--danger);">
+    <span class="test-label">danger</span>
+    <span data-icon="circle-alert" data-size="20"></span> 警告信息
+  </div>
+  <div class="test-row" style="color: var(--success);">
+    <span class="test-label">success</span>
+    <span data-icon="circle-check" data-size="20"></span> 操作成功
+  </div>
+  <div class="test-row" style="color: var(--warning);">
+    <span class="test-label">warning</span>
+    <span data-icon="triangle-alert" data-size="20"></span> 注意事项
+  </div>
+  <div class="test-row" style="color: var(--gray-400);">
+    <span class="test-label">gray-400</span>
+    <span data-icon="archive-x" data-size="20"></span> 空状态
+  </div>
+</div>
+
+<!-- 3. 按钮 -->
+<div class="test-section">
+  <h2>3. 按钮中的图标</h2>
+  <div class="test-row">
+    <button class="btn">
+      <span data-icon="clipboard-pen" data-size="18"></span>
+      开始本期
+    </button>
+    <button class="btn btn-danger">
+      <span data-icon="trash-2" data-size="18"></span>
+      删除
+    </button>
+    <button class="snapshot-btn primary">
+      <span data-icon="save" data-size="16"></span>
+      保存快照
+    </button>
+    <button class="snapshot-btn">
+      <span data-icon="clipboard-clock" data-size="16"></span>
+      快照历史
+    </button>
+    <button class="snapshot-btn reset" onclick="resetPeriod()">
+      <span data-icon="refresh-ccw-dot" data-size="16"></span>
+      重置
+    </button>
+  </div>
+</div>
+
+<!-- 4. 标题 -->
+<div class="test-section">
+  <h2>4. 标题中的图标</h2>
+  <div style="display:flex;align-items:center;gap:8px;font-size:1.2rem;font-weight:700;color:var(--gray-800);margin-bottom:8px;">
+    <span data-icon="layout-dashboard" data-size="22"></span>
+    情景记账版个人财务管理系统
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;font-size:0.95rem;font-weight:600;color:var(--gray-600);">
+    <span data-icon="notepad-text" data-size="18"></span>
+    情景记账录入
+  </div>
+</div>
+
+<!-- 5. 状态 -->
+<div class="test-section">
+  <h2>5. 状态消息中的图标</h2>
+  <div class="test-row">
+    <span class="status success">
+      <span data-icon="square-check" data-size="16"></span>
+      就绪 — 工资收入 ¥5,000
+    </span>
+  </div>
+  <div class="test-row">
+    <span class="status success">
+      <span data-icon="list-checks" data-size="16"></span>
+      第3次记账已提交 5 条记录
+    </span>
+  </div>
+  <div class="test-row">
+    <span class="status warning">
+      <span data-icon="circle-alert" data-size="16"></span>
+      还有 3 条未提交的记账记录
+    </span>
+  </div>
+  <div class="test-row">
+    <span class="status error">
+      <span data-icon="triangle-alert" data-size="16"></span>
+      文件格式不正确
+    </span>
+  </div>
+</div>
+
+<!-- 6. 一览 -->
+<div class="test-section">
+  <h2>6. 常用图标一览 (30个)</h2>
+  <div class="test-row" style="gap:16px;">
+    <span title="wallet"><span data-icon="wallet" data-size="20"></span></span>
+    <span title="shopping-cart"><span data-icon="shopping-cart" data-size="20"></span></span>
+    <span title="chart-candlestick"><span data-icon="chart-candlestick" data-size="20"></span></span>
+    <span title="house-plus"><span data-icon="house-plus" data-size="20"></span></span>
+    <span title="house"><span data-icon="house" data-size="20"></span></span>
+    <span title="credit-card"><span data-icon="credit-card" data-size="20"></span></span>
+    <span title="calculator"><span data-icon="calculator" data-size="20"></span></span>
+    <span title="text-cursor-input"><span data-icon="text-cursor-input" data-size="20"></span></span>
+    <span title="printer"><span data-icon="printer" data-size="20"></span></span>
+    <span title="circle-x"><span data-icon="circle-x" data-size="20"></span></span>
+    <span title="x"><span data-icon="x" data-size="20"></span></span>
+    <span title="calendar"><span data-icon="calendar" data-size="20"></span></span>
+    <span title="calendar-fold"><span data-icon="calendar-fold" data-size="20"></span></span>
+    <span title="calendar-clock"><span data-icon="calendar-clock" data-size="20"></span></span>
+    <span title="rotate-cw"><span data-icon="rotate-cw" data-size="20"></span></span>
+    <span title="repeat-2"><span data-icon="repeat-2" data-size="20"></span></span>
+  </div>
+  <div class="test-row" style="gap:16px;margin-top:8px;">
+    <span title="database"><span data-icon="database" data-size="20"></span></span>
+    <span title="folder-input"><span data-icon="folder-input" data-size="20"></span></span>
+    <span title="folder-output"><span data-icon="folder-output" data-size="20"></span></span>
+    <span title="package-open"><span data-icon="package-open" data-size="20"></span></span>
+    <span title="file-text"><span data-icon="file-text" data-size="20"></span></span>
+    <span title="images"><span data-icon="images" data-size="20"></span></span>
+    <span title="send"><span data-icon="send" data-size="20"></span></span>
+    <span title="replace"><span data-icon="replace" data-size="20"></span></span>
+    <span title="iteration-cw"><span data-icon="iteration-cw" data-size="20"></span></span>
+    <span title="inbox"><span data-icon="inbox" data-size="20"></span></span>
+    <span title="archive-x"><span data-icon="archive-x" data-size="20"></span></span>
+    <span title="sticky-note"><span data-icon="sticky-note" data-size="20"></span></span>
+    <span title="sticky-note-check"><span data-icon="sticky-note-check" data-size="20"></span></span>
+    <span title="circle-fading-plus"><span data-icon="circle-fading-plus" data-size="20"></span></span>
+    <span title="chart-column-big"><span data-icon="chart-column-big" data-size="20"></span></span>
+  </div>
+</div>
+
+<!-- 7. 模态框切换 -->
+<div class="test-section">
+  <h2>7. 模态框切换测试 (switchModal)</h2>
+  <p style="font-size:0.82rem;color:var(--gray-500);margin:0 0 12px;">反复点击 A↔B，观察 backdrop 是否闪烁</p>
+  <div class="test-row">
+    <button class="btn" onclick="openModal('modal-a')">打开 A</button>
+    <button class="btn" onclick="switchModal('modal-a', 'modal-b')">A → B</button>
+    <button class="btn" onclick="switchModal('modal-b', 'modal-a')">B → A</button>
+    <button class="btn" onclick="openModal('modal-b')">直接打开 B</button>
+    <button class="btn btn-danger" onclick="showToast('操作成功')">触发 Toast</button>
+  </div>
+</div>
+
+<!-- 8. choice-btn -->
+<div class="test-section">
+  <h2>8. choice-btn 模拟</h2>
+  <div class="choice-btn" onclick="openModal('modal-a')">
+    <div class="choice-icon">
+      <span data-icon="database-search" data-size="22"></span>
+    </div>
+    <div class="choice-text">
+      <div class="title" style="font-weight:600;font-size:0.9rem;">从历史存档开始</div>
+      <div class="desc" style="font-size:0.78rem;color:var(--gray-400);margin-top:3px;">选择已保存的快照作为期初数据</div>
+    </div>
+  </div>
+  <br>
+  <div class="choice-btn" onclick="openModal('modal-b')">
+    <div class="choice-icon">
+      <span data-icon="pen-line" data-size="22"></span>
+    </div>
+    <div class="choice-text">
+      <div class="title" style="font-weight:600;font-size:0.9rem;">手动输入期初数据</div>
+      <div class="desc" style="font-size:0.78rem;color:var(--gray-400);margin-top:3px;">手动填写各项资产的期初金额</div>
+    </div>
+  </div>
+</div>
+
+<!-- 模态框 A -->
+<div class="modal-overlay" id="modal-a">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <span data-icon="clipboard-pen-line" data-size="18"></span>
+      <h3>开始本期</h3>
+      <button class="modal-close" onclick="closeModal('modal-a')">
+        <span data-icon="x" data-size="18"></span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0 0 16px;">模态框 A — "开始本期"</p>
+      <button class="btn" onclick="switchModal('modal-a', 'modal-b')">
+        <span data-icon="chevron-left" data-size="16"></span>
+        前往模态框 B (switchModal)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 模态框 B — [← 返回] [icon] 标题 [×] -->
+<div class="modal-overlay" id="modal-b">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <button class="modal-back-btn" onclick="switchModal('modal-b', 'modal-a')">
+        <span data-icon="chevron-left" data-size="14"></span>
+        返回
+      </button>
+      <span data-icon="square-pen" data-size="18"></span>
+      <h3>手动输入期初数据</h3>
+      <button class="modal-close" onclick="closeModal('modal-b')">
+        <span data-icon="x" data-size="18"></span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0 0 16px;">模态框 B — "手动输入期初数据"</p>
+      <p style="margin:0;font-size:0.82rem;color:var(--gray-500);">
+        [← 返回] [icon] 标题 [×] — 同一行水平居中
+      </p>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- ========== 核心库 ========== -->
+<script src="../js/core/icons-data.js"></script>
+
+<script>
+  // ========== icon() 辅助函数 ==========
+  function icon(name, size) {
+    size = size || 16;
+    var paths = ICON_PATHS[name] || '';
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 1024 1024" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="icon-svg">' + paths + '</svg>';
+  }
+
+  // ========== 自动处理 [data-icon] 元素 ==========
+  function processDataIcons() {
+    var els = document.querySelectorAll('[data-icon]');
+    els.forEach(function(el) {
+      var name = el.getAttribute('data-icon');
+      var size = el.getAttribute('data-size') || 16;
+      el.outerHTML = icon(name, parseInt(size));
+    });
+  }
+
+  // ========== 模态框 ==========
+  function openModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = "flex";
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        el.classList.add("active");
+      });
+    });
+  }
+
+  function closeModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove("active");
+    el.addEventListener("transitionend", function handler() {
+      el.removeEventListener("transitionend", handler);
+      if (!el.classList.contains("active")) el.style.display = "none";
+    });
+    setTimeout(function () {
+      if (!el.classList.contains("active") && el.style.display !== "none") el.style.display = "none";
+    }, 300);
+  }
+
+  // ========== switchModal 原子切换 ==========
+  function switchModal(fromId, toId) {
+    if (fromId === toId) return;
+    var fromEl = document.getElementById(fromId);
+    var toEl = document.getElementById(toId);
+    if (!fromEl || !toEl) return;
+
+    // 1. TO 先出现
+    toEl.style.display = "flex";
+    void toEl.offsetHeight;
+
+    // 2. 先激活 TO
+    toEl.classList.add("active");
+
+    // 3. 再停用 FROM
+    fromEl.classList.remove("active");
+
+    // 4. 等 FROM 的 opacity 过渡结束
+    var cleanup = function () {
+      if (!fromEl.classList.contains("active") && fromEl.style.display !== "none")
+        fromEl.style.display = "none";
+    };
+    var cleanupTimer = setTimeout(cleanup, 350);
+
+    fromEl.addEventListener("transitionend", function handler(e) {
+      if (e.propertyName === "opacity") {
+        clearTimeout(cleanupTimer);
+        fromEl.removeEventListener("transitionend", handler);
+        cleanup();
+      }
+    });
+  }
+
+  // 点击遮罩关闭
+  document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("modal-overlay") && e.target.classList.contains("active")) {
+      if (e.target.id === "confirm-modal") return;
+      closeModal(e.target.id);
+    }
+  });
+
+  // ========== Toast ==========
+  function showToast(message) {
+    var container = document.getElementById("toast-container");
+    var toast = document.createElement("div");
+    toast.className = "toast success";
+    toast.innerHTML = icon("circle-check", 16) + " " + message;
+    container.appendChild(toast);
+    setTimeout(function () {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 3000);
+  }
+
+  function resetPeriod() {
+    showToast("本期数据已重置");
+  }
+
+  // ========== 页面加载：替换所有 data-icon 为 inline SVG ==========
+  processDataIcons();
+</script>
+</body>
+</html>
