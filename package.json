@@ -1,0 +1,19 @@
+{
+  "name": "finance",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">\r   <img src=\"https://img.icons8.com/fluency/96/null/piggy-bank.png\" alt=\"logo\" width=\"96\" />\r </p>",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

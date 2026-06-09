@@ -129,22 +129,32 @@
       <div class="report-card">
         <div class="report-title">资产负债盘点表</div>
         <div class="snapshot-bar">
-          <button class="snapshot-btn save" onclick="saveSnapshot()">
-            <span data-icon="save" data-size="16"></span> 保存快照
-          </button>
-          <button class="snapshot-btn history" onclick="openHistoryModal()">
-            <span data-icon="clipboard-clock" data-size="16"></span> 快照历史
-          </button>
-          <button class="snapshot-btn export" onclick="exportReport()">
-            <span data-icon="printer" data-size="16"></span> 打印报表
-          </button>
-          <span class="snapshot-bar-divider"></span>
-          <button class="snapshot-btn reset" onclick="resetPeriod()">
-            <span data-icon="refresh-ccw-dot" data-size="16"></span> 重置
-          </button>
-          <button class="snapshot-btn" onclick="refreshPage()">
-            <span data-icon="rotate-cw" data-size="16"></span> 刷新
-          </button>
+          <div class="snapshot-bar-group">
+            <button class="snapshot-btn save" onclick="saveSnapshot()">
+              <span data-icon="save" data-size="16"></span> 保存快照
+            </button>
+            <button class="snapshot-btn history" onclick="openHistoryModal()">
+              <span data-icon="clipboard-clock" data-size="16"></span> 快照历史
+            </button>
+            <button class="snapshot-btn export" onclick="exportReport()">
+              <span data-icon="printer" data-size="16"></span> 打印报表
+            </button>
+            <button class="snapshot-btn cloud" onclick="CloudSpace()">
+              <span data-icon="cloud" data-size="16"></span> 云空间
+            </button>
+          </div>
+          <div class="snapshot-bar-group">
+            <span class="snapshot-bar-divider"></span>
+            <button class="snapshot-btn reset" onclick="resetPeriod()">
+              <span data-icon="refresh-ccw-dot" data-size="16"></span> 重置
+            </button>
+            <button class="snapshot-btn" onclick="refreshPage()">
+              <span data-icon="rotate-cw" data-size="16"></span> 刷新
+            </button>
+            <button class="snapshot-btn danger" onclick="initializeReport()">
+              <span data-icon="clipboard-x" data-size="16"></span> 初始化
+            </button>
+          </div>
           <input
             type="file"
             id="snapshot-import"
@@ -586,7 +596,7 @@
             </button>
             <button class="choice-btn" onclick="doStartNewPeriod(false)">
               <span class="choice-icon"
-                ><span data-icon="clipboard-x" data-size="28"></span></span
+                ><span data-icon="clipboard-minus" data-size="28"></span></span
               ><span class="choice-text"
                 ><span class="title">不保存，重新开始</span
                 ><span class="desc"
@@ -647,6 +657,58 @@
                   >完整恢复存档时的状态（期初、变动、暂存记录全部还原）</span
                 ></span
               >
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 云空间弹窗 -->
+    <div class="modal-overlay" id="cloud-modal">
+      <div class="modal-dialog" style="max-width: 420px">
+        <div class="modal-header">
+          <h3><span data-icon="cloud" data-size="1.5em"></span> 云空间</h3>
+          <button class="modal-close" onclick="closeModal('cloud-modal')">
+            <span data-icon="x" data-size="18"></span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div
+            class="cloud-status-container"
+            style="text-align: center; padding: 20px 10px"
+          >
+            <div
+              class="cloud-status-icon"
+              id="cloud-status-icon"
+              style="font-size: 64px; margin-bottom: 20px"
+            >
+              <span data-icon="cloud-upload" data-size="48"></span>
+            </div>
+            <div
+              class="cloud-status-message"
+              id="cloud-status-message"
+              style="font-size: 16px; color: #333; margin-bottom: 10px"
+            >
+              云空间
+            </div>
+            <div
+              class="cloud-status-detail"
+              id="cloud-status-detail"
+              style="font-size: 13px; color: #999; margin-bottom: 20px"
+            >
+              点击下方按钮测试连接
+            </div>
+            <!-- 测试连接按钮 -->
+            <button
+              class="choice-btn"
+              onclick="CloudSync.ifLinkCloud()"
+              style="width: 100%; text-align: center; justify-content: center"
+            >
+              <span class="choice-icon">🔌</span>
+              <span class="choice-text">
+                <span class="title">测试连接</span>
+                <span class="desc">检查后端服务是否正常运行</span>
+              </span>
             </button>
           </div>
         </div>
@@ -732,5 +794,7 @@
     <script src="js/ui/report.js"></script>
     <script src="js/snapshot/snapshot.js"></script>
     <script src="js/app.js"></script>
+    <!-- 云空间模块（新增） -->
+    <script src="js/cloud-sync.js"></script>
   </body>
 </html>

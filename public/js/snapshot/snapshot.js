@@ -1,5 +1,13 @@
 // ==================== 3. 开始本期相关函数 ====================
 function openStartPeriodModal() {
+  if (isPeriodActive()) {
+    transitionToFormView();
+    calculate();
+    renderPendingList();
+    updatePeriodDisplay();
+    showToast(icon("circle-check") + " 已恢复本期记账状态", "success");
+    return;
+  }
   openModal("start-period-modal");
 }
 function startFromHistory() {
@@ -602,6 +610,19 @@ function resetPeriod() {
 function refreshPage() {
   updatePeriodDisplay();
   showToast(icon("circle-check") + " 时间已刷新", "success");
+}
+
+function initializeReport() {
+  showConfirm(
+    "初始化报表",
+    "确定要清空所有数据吗？\n包括期初数据、本期变动、记账记录和时间，报表将回到全 0 状态。\n\n此操作不可撤销！",
+    "初始化",
+    "取消"
+  ).then(function (confirmed) {
+    if (!confirmed) return;
+    doStartNewPeriod(false);
+    showToast(icon("circle-check") + " 报表已初始化，所有数据已清空。", "success");
+  });
 }
 
 function exitToStartScreen() {

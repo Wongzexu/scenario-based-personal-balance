@@ -30,17 +30,27 @@ function isPeriodActive() {
 function checkPeriodAndShowUI() {
   var startSection = document.getElementById("start-section");
   var formSection = document.getElementById("form-section");
+  var periodInfo = document.getElementById("period-info");
+  var bar = document.querySelector(".snapshot-bar");
   if (isPeriodActive()) {
     startSection.style.display = "none";
     formSection.style.display = "block";
+    if (periodInfo) periodInfo.style.display = "";
+    if (bar) bar.classList.remove("disabled");
   } else {
     startSection.style.display = "block";
     formSection.style.display = "none";
+    if (periodInfo) periodInfo.style.display = "none";
+    if (bar) bar.classList.add("disabled");
   }
 }
 function transitionToFormView() {
   document.getElementById("start-section").style.display = "none";
   document.getElementById("form-section").style.display = "block";
+  var periodInfo = document.getElementById("period-info");
+  if (periodInfo) periodInfo.style.display = "";
+  var bar = document.querySelector(".snapshot-bar");
+  if (bar) bar.classList.remove("disabled");
 }
 
 // ==================== 12. 恢复与持久化 ====================
@@ -149,6 +159,7 @@ function updatePeriodDisplay() {
     }
   } else {
     beginEl.textContent = "未设定";
+    currentEl.textContent = "--";
     diffEl.style.display = "none";
   }
 }

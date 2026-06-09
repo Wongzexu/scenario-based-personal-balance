@@ -2,15 +2,15 @@
   <img src="https://img.icons8.com/fluency/96/null/piggy-bank.png" alt="logo" width="96" />
 </p>
 
-<h1 align="center">情景记账版个人资产负债表</h1>
+<h1 align="center">情景记账版个人财务管理系统</h1>
 
 <p align="center">
-  <strong>场景化记账 · 自动联动资产负债表 · 纯前端零依赖</strong>
+  <strong>场景化记账 · 自动联动资产负债表 · 前后端渐进式架构</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/版本-1.2-emerald?style=flat-square" alt="version" />
-  <img src="https://img.shields.io/badge/构建-纯前端-059669?style=flat-square" alt="build" />
+  <img src="https://img.shields.io/badge/版本-2.0.1-emerald?style=flat-square" alt="version" />
+  <img src="https://img.shields.io/badge/构建-纯前端+Express后端-059669?style=flat-square" alt="build" />
   <img src="https://img.shields.io/badge/图标-Lucide_SVG-0d9488?style=flat-square" alt="icons" />
   <img src="https://img.shields.io/badge/浏览器-现代浏览器-6366f1?style=flat-square" alt="browsers" />
 </p>
@@ -19,7 +19,7 @@
 
 ## 简介
 
-一个基于浏览器的个人财务管理系统，采用**情景记账**模式，将复杂的财务操作简化为三步：**选场景 → 填金额 → 自动联动**。无需任何构建工具或后端服务，打开即用，数据存储在浏览器本地。
+一个基于浏览器的个人财务管理系统，采用**情景记账**模式，将复杂的财务操作简化为三步：**选场景 → 填金额 → 自动联动**。v2.0 重构项目结构，引入 Node.js + Express 后端架起前后端桥梁，纯前端模式仍零依赖打开即用。
 
 > 适合场景：个人/家庭日常收支管理、月度财务盘点、资产负债追踪。
 
@@ -27,12 +27,24 @@
 
 ## 快速开始
 
+### 纯前端模式（零依赖）
 ```bash
-# 直接用浏览器打开 index.html 即可
-open index.html
+# 用浏览器直接打开 public/index.html 即可
+open public/index.html
 ```
 
-> 没有 Node.js、没有 npm install、没有构建步骤。
+### 服务端模式（推荐）
+```bash
+# 1. 安装依赖
+npm install
+
+# 2. 启动后端服务
+node server.js
+
+# 3. 浏览器访问 http://localhost:3000
+```
+
+> 纯前端模式无需 Node.js、无需 npm install、无需构建步骤。服务端模式开启云空间 API 接口，为后续数据同步做准备。
 
 ---
 
@@ -79,6 +91,8 @@ open index.html
 | **暂存确认** | 记账先入暂存区，审核无误后批量提交到资产负债表 |
 | **快照覆盖** | 支持覆盖已有存档，类似游戏存档槽位机制 |
 | **SVG 图标系统** | 63 个 Lucide 风格 SVG 图标，内联渲染，支持颜色继承和相对尺寸 |
+| **云空间预留** | 云同步功能接口预留，支持后端连接测试 |
+| **确认弹窗系统** | 统一的确认弹窗，覆盖危险操作场景，降低误触风险 |
 
 ---
 
@@ -197,19 +211,19 @@ html += icon("check-check", "1em") + " 提交";
 
 ```bash
 # 注册新图标（自动写入 icons-data.js）
-node tools/icon-tools/add-icon.js camera star
+node public/tools/icon-tools/add-icon.js camera star
 
 # 搜索可用图标
-node tools/icon-tools/add-icon.js --search chart
+node public/tools/icon-tools/add-icon.js --search chart
 
 # 查看未注册图标列表
-node tools/icon-tools/add-icon.js --list
+node public/tools/icon-tools/add-icon.js --list
 
 # 刷新图标清单（新增 SVG 后使用）
-node tools/icon-tools/add-icon.js --sync
+node public/tools/icon-tools/add-icon.js --sync
 ```
 
-也可以打开 `tools/icon-tools/manager.html` 可视化浏览 427 个可用图标。
+也可以打开 `public/tools/icon-tools/manager.html` 可视化浏览 427 个可用图标。
 
 ---
 
@@ -220,38 +234,52 @@ node tools/icon-tools/add-icon.js --sync
 | **前端** | HTML5 + CSS3 + JavaScript (Vanilla) |
 | **布局** | CSS Grid 双栏响应式布局 |
 | **图标** | Lucide SVG 内联渲染，`fill="currentColor"` 颜色继承 |
-| **数据** | localStorage（持久化） |
+| **数据** | localStorage（持久化），未来可切换为后端 API |
 | **导出** | Canvas 2D API（PNG）/ `window.print()`（PDF） |
-| **依赖** | 零外部依赖 |
+| **后端** | Node.js + Express（v2.0 新增，可选） |
 
 ### 文件结构
 
 ```
 finance/
-├── index.html                    # 主页面
-├── css/
-│   └── style.css                 # 样式
-├── js/
-│   ├── app.js                    # 入口、图标辅助函数
-│   ├── config/
-│   │   └── scenarios.js          # 情景映射配置
-│   ├── core/
-│   │   ├── icons-data.js         # SVG path 数据（63 个图标）
-│   │   ├── storage.js            # 数据读写
-│   │   ├── state.js              # 全局状态、周期管理
-│   │   └── calculator.js         # 计算引擎
-│   ├── ui/
-│   │   ├── modal.js              # 弹窗、Toast、switchModal
-│   │   ├── form.js               # 表单验证、确认记账
-│   │   ├── render.js             # 暂存列表渲染
-│   │   └── report.js             # 报表导出
-│   └── snapshot/
-│       └── snapshot.js           # 快照保存/加载/导入
-├── src/assets/icons/             # SVG 图标库（427 个）
-├── tools/icon-tools/             # 图标管理工具
-│   ├── manager.html              # 可视化图标浏览器
-│   ├── add-icon.js               # CLI 注册工具
-│   └── icon-list.js              # 图标清单
+├── server.js                       # Express 后端服务（v2.0 新增）
+├── package.json                    # Node.js 项目配置（v2.0 新增）
+├── data/
+│   └── users.json                  # 用户示例数据（v2.0 新增）
+├── public/                         # 前端静态资源（v2.0 移入 public/）
+│   ├── index.html                  # 主页面
+│   ├── css/
+│   │   └── style.css               # 样式（CSS 变量设计系统）
+│   ├── js/
+│   │   ├── app.js                  # 入口、图标辅助函数
+│   │   ├── cloud-sync.js           # 云空间同步模块（v2.0 新增）
+│   │   ├── config/
+│   │   │   └── scenarios.js        # 情景映射配置
+│   │   ├── core/
+│   │   │   ├── icons-data.js       # SVG path 数据（63 个图标）
+│   │   │   ├── storage.js          # 数据读写
+│   │   │   ├── state.js            # 全局状态、周期管理
+│   │   │   └── calculator.js       # 计算引擎
+│   │   ├── ui/
+│   │   │   ├── modal.js            # 弹窗、Toast、switchModal
+│   │   │   ├── form.js             # 表单验证、确认记账
+│   │   │   ├── render.js           # 暂存列表渲染
+│   │   │   └── report.js           # 报表导出
+│   │   └── snapshot/
+│   │       └── snapshot.js         # 快照保存/加载/导入
+│   ├── tools/icon-tools/           # 图标管理工具
+│   │   ├── manager.html            # 可视化图标浏览器
+│   │   ├── add-icon.js             # CLI 注册工具
+│   ├── tests/
+│   │   └── icon-modal-test.html    # 图标模态框测试
+│   └── todo/
+│       ├── future-front-end.md     # 前端待办
+│       ├── future-back-end.md      # 后端学习指引（v2.0 新增）
+│       ├── svg-icon-plan.md        # SVG 图标计划
+│       └── what next.md            # 下一步计划（v2.0 新增）
+├── src/assets/icons/               # SVG 图标库（427 个）
+├── version/                        # 版本索引（v2.0 新增）
+│   └── v2.0.md                     # v2.0 项目索引
 └── README.md
 ```
 
@@ -261,6 +289,7 @@ finance/
 
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
+| **v2.0.1** | 2026-06-09 | **大型重构**：项目目录拆分至 `public/`，引入 Node.js + Express 后端架，云空间功能预留，CSS 变量设计系统，确认弹窗系统，统一图标管理，新建版本索引 |
 | **v1.2** | 2026-06-09 | SVG 图标全面替换、switchModal 模态框平滑切换、期初金额分区、快照来源区分图标、图标管理工具、icon() 支持 em 相对单位 |
 | **v1.1.1** | 2026-06-03 | 会话系统、快照双模式加载、快照覆盖、模态框返回、Toast 通知、浮点精度修复、UI 全面打磨 |
 | **v1.0.3** | — | 开始本期流程、暂存确认、快照覆盖、新的一期重置 |
@@ -272,12 +301,14 @@ finance/
 
 ## 后续计划
 
+- [ ] 云空间数据同步（连接后端实现云端存取）
 - [ ] 历史数据对比分析（多期净资产趋势图）
 - [ ] 财务比率计算（资产负债率、流动比率等）
 - [ ] 预算管理功能
 - [ ] 更多情景支持（根据用户反馈）
 - [ ] 数据导出为 Excel/CSV 格式
 - [ ] 暗色模式
+- [ ] 用户认证与权限系统
 
 ---
 
