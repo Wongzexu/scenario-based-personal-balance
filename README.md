@@ -211,19 +211,16 @@ html += icon("check-check", "1em") + " 提交";
 
 ```bash
 # 注册新图标（自动写入 icons-data.js）
-node public/tools/icon-tools/add-icon.js camera star
+node tools/icon-tools/add-icon.js camera star
 
 # 搜索可用图标
-node public/tools/icon-tools/add-icon.js --search chart
+node tools/icon-tools/add-icon.js --search chart
 
 # 查看未注册图标列表
-node public/tools/icon-tools/add-icon.js --list
-
-# 刷新图标清单（新增 SVG 后使用）
-node public/tools/icon-tools/add-icon.js --sync
+node tools/icon-tools/add-icon.js --sync
 ```
 
-也可以打开 `public/tools/icon-tools/manager.html` 可视化浏览 427 个可用图标。
+也可以打开 `admin/icon-manager.html` 可视化浏览 427 个可用图标。
 
 ---
 
@@ -267,9 +264,6 @@ finance/
 │   │   │   └── report.js           # 报表导出
 │   │   └── snapshot/
 │   │       └── snapshot.js         # 快照保存/加载/导入
-│   ├── tools/icon-tools/           # 图标管理工具
-│   │   ├── manager.html            # 可视化图标浏览器
-│   │   ├── add-icon.js             # CLI 注册工具
 │   ├── tests/
 │   │   └── icon-modal-test.html    # 图标模态框测试
 │   └── todo/
@@ -277,8 +271,12 @@ finance/
 │       ├── future-back-end.md      # 后端学习指引（v2.0 新增）
 │       ├── svg-icon-plan.md        # SVG 图标计划
 │       └── what next.md            # 下一步计划（v2.0 新增）
-├── src/assets/icons/               # SVG 图标库（427 个）
-├── version/                        # 版本索引（v2.0 新增）
+├── admin/                           # 管理后台界面（v2.1 新增）
+│   └── icon-manager.html            # 图标管理器
+├── tools/icon-tools/                # CLI 开发工具
+│   └── add-icon.js                  # SVG 图标注册脚本
+├── src/assets/icons/                # SVG 图标库（427 个）
+├── version/                         # 版本索引
 │   └── v2.0.md                     # v2.0 项目索引
 └── README.md
 ```

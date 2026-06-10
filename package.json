@@ -1,7 +1,7 @@
 {
   "name": "finance",
   "version": "1.0.0",
-  "description": "<p align=\"center\">\r   <img src=\"https://img.icons8.com/fluency/96/null/piggy-bank.png\" alt=\"logo\" width=\"96\" />\r </p>",
+  "description": "Finance application - personal finance management tool",
   "main": "index.js",
   "directories": {
     "test": "tests"
@@ -14,6 +14,8 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "sql.js": "^1.14.1"
   }
 }

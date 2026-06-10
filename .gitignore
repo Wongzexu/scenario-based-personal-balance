@@ -4,3 +4,5 @@ src
 node_modules/
 *.log
 .env
+public/todo/
+old/

@@ -1,0 +1,1711 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图标管理后台 — Icon Manager</title>
+    <style>
+      :root {
+        --bg: #f8f9fa;
+        --card: #fff;
+        --border: #e5e7eb;
+        --text: #374151;
+        --muted: #9ca3af;
+        --primary: #0d9488;
+        --primary-light: #ccfbf1;
+        --success: #10b981;
+        --radius: 8px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family:
+          "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 24px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Header */
+      .header {
+        max-width: 1400px;
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .header h1 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        white-space: nowrap;
+        margin-bottom: 10px;
+      }
+      .stats {
+        display: flex;
+        gap: 12px;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      .stats span {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 4px 12px;
+        border-radius: 20px;
+        white-space: nowrap;
+      }
+      .stats .registered {
+        color: var(--primary);
+        border-color: var(--primary);
+        background: var(--primary-light);
+      }
+      .cli-hints {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .hint-chip {
+        font-size: 0.72rem;
+        padding: 3px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 14px;
+        cursor: pointer;
+        color: #6b7280;
+        font-family: "SF Mono", "Fira Code", monospace;
+        transition: all 0.15s;
+        white-space: nowrap;
+        user-select: none;
+      }
+      .hint-chip:hover {
+        background: #1f2937;
+        color: #fff;
+        border-color: #1f2937;
+      }
+
+      /* Upload Zone */
+      .upload-zone {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        max-width: 1400px;
+        margin: 0 auto 16px;
+        border: 2px dashed var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.15s;
+        background: var(--card);
+        color: var(--muted);
+      }
+      .upload-zone:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        color: var(--primary);
+      }
+      .upload-zone.dragover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        color: var(--primary);
+      }
+
+      /* Toolbar */
+      .toolbar {
+        max-width: 1400px;
+        margin: 0 auto 16px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .search-input {
+        flex: 1;
+        min-width: 200px;
+        padding: 9px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 0.9rem;
+        background: var(--card);
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .search-input:focus {
+        border-color: var(--primary);
+      }
+      .filter-btn {
+        padding: 9px 18px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        font-size: 0.85rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .filter-btn:hover {
+        background: #f3f4f6;
+      }
+      .filter-btn.active {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+      }
+      .action-btn {
+        padding: 9px 18px;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 0.85rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .action-btn.copy {
+        background: var(--primary);
+        color: #fff;
+      }
+      .action-btn.copy:hover {
+        opacity: 0.9;
+      }
+      .action-btn.copy:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .action-btn.batch {
+        background: #9ca3af;
+        color: #fff;
+        padding: 9px 18px;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 0.85rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .action-btn.batch:hover {
+        opacity: 0.9;
+      }
+      .action-btn.batch:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .action-btn.delete {
+        background: #ef4444;
+        color: #fff;
+        padding: 9px 18px;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 0.85rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .action-btn.delete:hover {
+        background: #dc2626;
+      }
+      .action-btn.delete:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /* Selected count */
+      .selected-info {
+        font-size: 0.82rem;
+        color: var(--muted);
+        white-space: nowrap;
+        display: none;
+      }
+      .selected-info.visible {
+        display: inline;
+      }
+
+      /* Grid */
+      .icon-grid {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 10px;
+      }
+      .icon-card {
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 8px 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.15s;
+        position: relative;
+        user-select: none;
+      }
+      .icon-card:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow);
+        transform: translateY(-1px);
+      }
+      .icon-card.selected {
+        border-color: var(--primary);
+        background: #ccfbf1;
+        box-shadow:
+          0 0 0 3px rgba(13, 148, 136, 0.3),
+          0 4px 12px rgba(13, 148, 136, 0.18);
+        transform: scale(1.04);
+        z-index: 1;
+      }
+      .icon-card.registered {
+        border-left: 4px solid var(--success);
+      }
+      .icon-card .preview {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto 6px;
+        color: #4b5563;
+      }
+      .icon-card .preview svg {
+        width: 40px;
+        height: 40px;
+      }
+      .icon-card .name {
+        font-size: 0.7rem;
+        color: var(--muted);
+        word-break: break-all;
+        line-height: 1.3;
+      }
+      .icon-card .badge {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .badge.reg {
+        background: #ecfdf5;
+        color: #065f46;
+      }
+      .badge.new {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      /* Code panel */
+      .code-panel {
+        max-width: 1400px;
+        margin: 20px auto;
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        display: none;
+      }
+      .code-panel.visible {
+        display: block;
+      }
+      .code-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--border);
+        background: #fafafa;
+        border-radius: var(--radius) var(--radius) 0 0;
+      }
+      .code-panel-header h3 {
+        font-size: 0.9rem;
+      }
+      .code-panel-header button {
+        font-size: 0.78rem;
+        padding: 4px 14px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: #fff;
+        cursor: pointer;
+      }
+      .code-panel-header button:hover {
+        background: #f3f4f6;
+      }
+      .code-panel-columns {
+        display: flex;
+        gap: 16px;
+        padding: 16px 18px;
+      }
+      @media (max-width: 640px) {
+        .code-panel-columns {
+          flex-direction: column;
+        }
+      }
+      .code-panel-col {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .col-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+        color: var(--text);
+      }
+      .col-hint {
+        font-size: 0.73rem;
+        color: var(--muted);
+        margin-bottom: 8px;
+        line-height: 1.5;
+      }
+      .col-hint code {
+        background: #f3f4f6;
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-size: 0.72rem;
+      }
+      .copy-btn {
+        margin-top: 8px;
+        padding: 8px 16px;
+        border: 1.5px solid var(--primary);
+        border-radius: 6px;
+        background: #fff;
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.15s;
+        align-self: flex-start;
+      }
+      .copy-btn:hover {
+        background: var(--primary);
+        color: #fff;
+      }
+      .copy-btn:active {
+        transform: scale(0.97);
+      }
+      .code-panel textarea {
+        width: 100%;
+        min-height: 120px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px 14px;
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-size: 0.78rem;
+        line-height: 1.6;
+        resize: vertical;
+        background: transparent;
+        color: #1f2937;
+        outline: none;
+      }
+
+      /* Toast — 灵动岛 */
+      .toast-island {
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 999;
+        min-width: 260px;
+        max-width: 400px;
+        background: rgba(31, 41, 55, 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 16px;
+        padding: 10px 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+        font-size: 0.85rem;
+        color: #fff;
+        line-height: 1.5;
+        text-align: center;
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s ease;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateX(-50%) translateY(-8px);
+      }
+      .toast-island.visible {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      .toast-island .toast-progress {
+        height: 3px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 2px;
+        margin-top: 6px;
+        overflow: hidden;
+      }
+      .toast-island .toast-progress-bar {
+        height: 100%;
+        background: #10b981;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+
+      /* 删除确认弹窗 */
+      .delete-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: overlayIn 0.2s ease;
+      }
+      .delete-box {
+        background: #fff;
+        border-radius: 16px;
+        padding: 28px 32px 24px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        animation: boxIn 0.25s ease;
+      }
+      .delete-icon {
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #1f2937;
+      }
+      .delete-icon svg {
+        width: 40px;
+        height: 40px;
+      }
+      .delete-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #1f2937;
+      }
+      .delete-msg {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 8px;
+        line-height: 1.6;
+      }
+      .delete-icon-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 20px;
+        padding: 8px;
+        max-height: 140px;
+        overflow-y: auto;
+      }
+      .delete-icon-item {
+        text-align: center;
+        width: 56px;
+        flex-shrink: 0;
+      }
+      .delete-icon-preview {
+        width: 32px;
+        height: 32px;
+        margin: 0 auto 4px;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .delete-icon-preview svg {
+        width: 32px;
+        height: 32px;
+      }
+      .delete-icon-label {
+        font-size: 0.65rem;
+        color: #9ca3af;
+        line-height: 1.2;
+        word-break: break-all;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .delete-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+      }
+      .delete-cancel {
+        padding: 10px 24px;
+        border: 1.5px solid #d1d5db;
+        border-radius: 10px;
+        background: #fff;
+        color: #374151;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .delete-cancel:hover {
+        background: #f3f4f6;
+      }
+      .delete-confirm {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 10px;
+        background: #ef4444;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .delete-confirm:hover {
+        background: #dc2626;
+      }
+      .delete-confirm:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      @keyframes overlayIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes boxIn {
+        from {
+          transform: scale(0.92);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 640px) {
+        body {
+          padding: 12px;
+        }
+        .icon-grid {
+          grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+          gap: 6px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="scroll-sentinel"
+      style="height: 1px; width: 100%; pointer-events: none"
+    ></div>
+    <div class="header">
+      <div style="flex: 1; min-width: 200px">
+        <h1>
+          <img
+            src="/api/icons/svg/layout-panel-left"
+            width="30"
+            height="30"
+            alt=""
+            style="vertical-align: middle; margin: 0 8px 0; cursor: pointer"
+            onclick="refreshPage()"
+          />图标管理后台
+        </h1>
+        <div class="stats">
+          <span>总计 <strong id="stat-total">0</strong></span>
+          <span class="registered"
+            >已注册 <strong id="stat-reg">0</strong></span
+          >
+          <span>未注册 <strong id="stat-unreg">0</strong></span>
+        </div>
+      </div>
+      <div class="cli-hints">
+        <span style="font-size: 0.72rem; color: #9ca3af; margin-right: 2px"
+          >CLI手动代码:</span
+        >
+        <span
+          class="hint-chip"
+          onclick="copyCmd('node tools/icon-tools/add-icon.js 图标名')"
+          title="点击复制"
+          >(name)</span
+        >
+        <span
+          class="hint-chip"
+          onclick="copyCmd('node tools/icon-tools/add-icon.js --search 关键词')"
+          title="点击复制"
+          >--search</span
+        >
+        <span
+          class="hint-chip"
+          onclick="copyCmd('node tools/icon-tools/add-icon.js --sync')"
+          title="点击复制"
+          >--sync</span
+        >
+        <span
+          class="hint-chip"
+          onclick="copyCmd('node tools/icon-tools/add-icon.js --all')"
+          title="点击复制"
+          >--all</span
+        >
+      </div>
+    </div>
+
+    <!-- 上传区域 -->
+    <div class="upload-zone" id="upload-zone">
+      <span
+        id="blocks"
+        style="
+          display: inline-flex;
+          align-items: center;
+          vertical-align: middle;
+        "
+      ></span>
+      点击或拖拽 SVG 文件到此区域上传
+    </div>
+
+    <div class="toolbar">
+      <span style="position: relative; flex: 1; min-width: 200px">
+        <input
+          class="search-input"
+          id="search"
+          type="text"
+          placeholder="搜索图标名称…（支持模糊匹配）"
+          oninput="onSearchInput()"
+          style="width: 100%; padding-right: 32px"
+        />
+        <span
+          id="search-clear"
+          style="
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            display: none;
+            color: #9ca3af;
+            font-size: 1.1rem;
+            line-height: 1;
+          "
+          onclick="
+            document.getElementById('search').value = '';
+            updateClearBtn();
+            render();
+          "
+          title="清除搜索"
+          >✕</span
+        >
+      </span>
+      <button
+        class="filter-btn active"
+        data-filter="all"
+        onclick="setFilter('all', this)"
+      >
+        全部
+      </button>
+      <button
+        class="filter-btn"
+        data-filter="unreg"
+        onclick="setFilter('unreg', this)"
+      >
+        未注册
+      </button>
+      <button
+        class="filter-btn"
+        data-filter="reg"
+        onclick="setFilter('reg', this)"
+      >
+        已注册
+      </button>
+      <span class="selected-info" id="selected-info"
+        >已选 <strong id="sel-count">0</strong> 个</span
+      >
+      <a
+        id="deselect-link"
+        style="
+          display: none;
+          cursor: pointer;
+          font-size: 0.8rem;
+          color: #ef4444;
+          white-space: nowrap;
+        "
+        onclick="deselectAll()"
+        >取消选中</a
+      >
+      <a
+        id="code-link"
+        style="
+          display: none;
+          cursor: pointer;
+          font-size: 0.8rem;
+          color: var(--primary);
+          white-space: nowrap;
+        "
+        onclick="showCode()"
+        >查看代码</a
+      >
+      <button class="action-btn batch" id="batch-btn" disabled>
+        请先选中图标
+      </button>
+      <button class="action-btn delete" id="delete-btn" style="display: none">
+        删除
+      </button>
+    </div>
+
+    <div class="icon-grid" id="grid"></div>
+
+    <div class="code-panel" id="code-panel">
+      <div class="code-panel-header">
+        <h3 id="panel-title">
+          注册以下 <span id="panel-count">0</span> 个图标
+        </h3>
+        <button onclick="closeCode()">关闭</button>
+      </div>
+      <div class="code-panel-columns">
+        <div class="code-panel-col">
+          <div class="col-label">
+            <span style="color: var(--gray-400); font-size: 0.75rem"
+              >方式一</span
+            >
+            手动粘贴
+          </div>
+          <div class="col-hint">
+            打开
+            <code>public/js/core/icons-data.js</code
+            >，把下面这段插入到最后一个图标后面（}<code>;</code> 之前）
+          </div>
+          <textarea id="code-manual" readonly></textarea>
+          <button class="copy-btn" onclick="copyArea('code-manual')">
+            复制代码
+          </button>
+        </div>
+        <div class="code-panel-col">
+          <div class="col-label">
+            <span style="color: var(--gray-400); font-size: 0.75rem"
+              >方式二</span
+            >
+            CLI 命令
+          </div>
+          <div class="col-hint">在终端中执行（自动写入文件，无需粘贴）</div>
+          <textarea id="code-cli" readonly></textarea>
+          <button class="copy-btn" onclick="copyArea('code-cli')">
+            复制命令
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ============ API 数据 ============
+      var ALL_SVG_FILES = [];
+      var ICON_PATHS = {};
+      var registeredSet = new Set();
+
+      // ============ 状态 ============
+      var filter = "all";
+      var selected = new Set();
+      var uploadPendingRefresh = 0; // 待上传文件计数器
+      var searchTimer; // 搜索防抖定时器
+      var _svgCache = {}; // SVG 文本缓存（预加载用）
+      const MAX_UPLOAD = 20; // 单次最大上传数
+
+      // ============ 上传功能 ============
+      var uploadZone = document.getElementById("upload-zone");
+
+      uploadZone.addEventListener("click", function () {
+        var input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".svg";
+        input.multiple = true;
+        input.onchange = function (e) {
+          handleFiles(e.target.files);
+        };
+        input.click();
+      });
+
+      uploadZone.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        uploadZone.classList.add("dragover");
+      });
+
+      uploadZone.addEventListener("dragleave", function () {
+        uploadZone.classList.remove("dragover");
+      });
+
+      uploadZone.addEventListener("drop", function (e) {
+        e.preventDefault();
+        uploadZone.classList.remove("dragover");
+        handleFiles(e.dataTransfer.files);
+      });
+
+      function handleFiles(files) {
+        if (files.length > MAX_UPLOAD) {
+          showToast("一次最多上传 " + MAX_UPLOAD + " 个文件");
+          return;
+        }
+        var svgFiles = [];
+        for (var i = 0; i < files.length; i++) {
+          if (files[i].name.endsWith(".svg")) svgFiles.push(files[i]);
+        }
+        if (svgFiles.length === 0) {
+          showToast("请上传 SVG 文件");
+          return;
+        }
+        uploadPendingRefresh = svgFiles.length;
+        svgFiles.forEach(function (f, idx) {
+          uploadFile(f, idx + 1, svgFiles.length);
+        });
+      }
+
+      function uploadFile(file, current, total) {
+        var formData = new FormData();
+        formData.append("svg", file);
+
+        showToast("📤 上传中 (" + current + "/" + total + ")");
+
+        fetch("/api/icons/upload", {
+          method: "POST",
+          body: formData,
+        })
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (result) {
+            if (result.success) {
+              showToast("✅ 已添加: " + result.name);
+            } else {
+              showToast("❌ 上传失败: " + result.message);
+            }
+          })
+          .catch(function () {
+            showToast("❌ 上传失败，请确认后端已启动");
+          })
+          .then(function () {
+            // 计数器递减，归零时刷新一次（防抖保护）
+            if (--uploadPendingRefresh <= 0) {
+              uploadPendingRefresh = 0;
+              if (window._refreshTimer) clearTimeout(window._refreshTimer);
+              window._refreshTimer = setTimeout(refreshPage, 100);
+            }
+          });
+      }
+
+      // ============ 初始化：从 API 加载数据 ============
+      function init() {
+        // 并行请求列表数据和 paths 数据
+        Promise.all([
+          fetch("/api/icons/list").then(function (r) {
+            return r.json();
+          }),
+          fetch("/api/icons/paths").then(function (r) {
+            return r.json();
+          }),
+        ])
+          .then(function (results) {
+            var listResult = results[0];
+            var pathsResult = results[1];
+            if (listResult.success) ALL_SVG_FILES = listResult.data;
+            if (pathsResult.success) {
+              ICON_PATHS = pathsResult.data;
+              registeredSet = new Set(Object.keys(ICON_PATHS));
+            }
+            render();
+          })
+          .catch(function (err) {
+            showToast("⚠ 无法连接后端，请确认 server.js 已启动");
+            console.error(err);
+          });
+
+        // 预加载 blocks 图标（独立请求，与 list/paths 并行）
+        fetch("/api/icons/svg/blocks")
+          .then(function (r) {
+            if (!r.ok) throw new Error("加载失败");
+            return r.text();
+          })
+          .then(function (svgText) {
+            insertSvgInline(svgText, "blocks");
+          })
+          .catch(function () {
+            var el = document.getElementById("blocks");
+            if (el) el.innerHTML = "📁";
+          });
+
+        // 预加载 circle-alert 图标（删除弹窗用）
+        fetch("/api/icons/svg/circle-alert")
+          .then(function (r) {
+            if (!r.ok) throw new Error("加载失败");
+            return r.text();
+          })
+          .then(function (svgText) {
+            _svgCache["circle-alert"] = svgText;
+          })
+          .catch(function () {
+            // 忽略，删除弹窗走 loadInlineIcon 加载即可
+          });
+      }
+
+      // ============ 函数 ============
+      function matchesFilter(name) {
+        if (filter === "all") return true;
+        var isReg = registeredSet.has(name);
+        if (filter === "reg") return isReg;
+        if (filter === "unreg") return !isReg;
+        return true;
+      }
+
+      function updateClearBtn() {
+        document.getElementById("search-clear").style.display =
+          document.getElementById("search").value ? "block" : "none";
+      }
+
+      function onSearchInput() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () {
+          render();
+          updateClearBtn();
+        }, 200);
+      }
+
+      function matchesSearch(name) {
+        var q = document.getElementById("search").value.trim().toLowerCase();
+        if (!q) return true;
+        return name.toLowerCase().includes(q);
+      }
+
+      function setFilter(f, btn) {
+        filter = f;
+        document.querySelectorAll(".filter-btn").forEach(function (b) {
+          b.classList.remove("active");
+        });
+        btn.classList.add("active");
+        selected.clear();
+        updateBatchButton();
+        render();
+      }
+
+      function toggleIcon(name) {
+        if (selected.has(name)) {
+          selected.delete(name);
+        } else {
+          selected.add(name);
+        }
+        updateBatchButton();
+        render();
+      }
+
+      function deselectAll() {
+        selected.clear();
+        updateBatchButton();
+        render();
+      }
+
+      function updateBatchButton() {
+        var btn = document.getElementById("batch-btn");
+        var deleteBtn = document.getElementById("delete-btn");
+        var floatingDeleteBtn = document.getElementById("floating-delete");
+        var codeLink = document.getElementById("code-link");
+        var deselectLink = document.getElementById("deselect-link");
+        var count = selected.size;
+        var info = document.getElementById("selected-info");
+
+        if (count > 0) {
+          info.classList.add("visible");
+          document.getElementById("sel-count").textContent = count;
+          codeLink.style.display = "inline";
+          deselectLink.style.display = "inline";
+
+          var unregCount = 0,
+            regCount = 0;
+          selected.forEach(function (name) {
+            registeredSet.has(name) ? regCount++ : unregCount++;
+          });
+
+          if (unregCount > 0 && regCount === 0) {
+            btn.textContent = "一键注册 (" + count + ")";
+            btn.disabled = false;
+            btn.style.background = "#059669";
+            btn.onclick = function () {
+              batchRegister();
+            };
+          } else if (regCount > 0 && unregCount === 0) {
+            btn.textContent = "一键注销 (" + count + ")";
+            btn.disabled = false;
+            btn.style.background = "#dc2626";
+            btn.onclick = function () {
+              batchUnregister();
+            };
+          } else {
+            btn.textContent = "混合选中，无法批量操作";
+            btn.disabled = true;
+            btn.style.background = "#9ca3af";
+          }
+
+          // --- 删除按钮（两区同步） ---
+          deleteBtn.style.display = "inline-flex";
+          deleteBtn.textContent = "删除 (" + count + ")";
+          deleteBtn.disabled = false;
+          deleteBtn.onclick = function () {
+            confirmDeleteIcons();
+          };
+
+          floatingDeleteBtn.style.display = "inline-block";
+          floatingDeleteBtn.textContent = "删除 (" + count + ")";
+          floatingDeleteBtn.disabled = false;
+          floatingDeleteBtn.onclick = function () {
+            confirmDeleteIcons();
+          };
+        } else {
+          info.classList.remove("visible");
+          codeLink.style.display = "none";
+          deselectLink.style.display = "none";
+          btn.textContent = "请先选中图标";
+          btn.disabled = true;
+          btn.style.background = "#9ca3af";
+          btn.onclick = null;
+
+          deleteBtn.style.display = "none";
+          deleteBtn.onclick = null;
+          floatingDeleteBtn.style.display = "none";
+          floatingDeleteBtn.onclick = null;
+        }
+
+        // 同步浮层按钮（第一行）
+        var fb = document.getElementById("floating-btn");
+        var fc = document.getElementById("floating-code");
+        var fd = document.getElementById("floating-deselect");
+        var fcount = document.getElementById("floating-count");
+        fb.textContent = btn.textContent;
+        fb.disabled = btn.disabled;
+        fb.style.background = btn.style.background;
+        fb.onclick = btn.onclick;
+        if (count > 0) {
+          fcount.textContent = "已选 " + count + " 个";
+          fc.style.display = "inline";
+          fd.style.display = "inline";
+        } else {
+          fcount.textContent = "";
+          fc.style.display = "none";
+          fd.style.display = "none";
+        }
+
+        if (typeof batchInView !== "undefined") {
+          floatingBar.style.display =
+            !batchInView && count > 0 ? "flex" : "none";
+        }
+      }
+
+      // ============ 删除图标 ============
+      function confirmDeleteIcons() {
+        var count = selected.size;
+        if (count === 0) return;
+
+        var names = [];
+        selected.forEach(function (n) {
+          names.push(n);
+        });
+
+        // 构建图标预览网格（已注册用内联 SVG，未注册用 <img>）
+        var previewHtml = "";
+        names.forEach(function (name) {
+          var svgHtml;
+          if (ICON_PATHS[name]) {
+            svgHtml =
+              '<svg width="32" height="32" viewBox="0 0 1024 1024" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' +
+              ICON_PATHS[name] +
+              "</svg>";
+          } else {
+            svgHtml =
+              '<img src="/api/icons/svg/' +
+              name +
+              '" width="32" height="32" alt="" style="display:block;" onerror="this.outerHTML=\'<div style=width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#d1d5db;font-size:16px;>?</div>\'">';
+          }
+          previewHtml +=
+            '<div class="delete-icon-item">' +
+            '  <div class="delete-icon-preview">' +
+            svgHtml +
+            "</div>" +
+            '  <div class="delete-icon-label">' +
+            name +
+            "</div>" +
+            "</div>";
+        });
+
+        var overlay = document.createElement("div");
+        overlay.className = "delete-overlay";
+
+        // 删除图标符号：优先使用缓存，否则异步加载
+        var symbolHtml;
+        var cached = _svgCache["circle-alert"];
+        if (cached) {
+          var temp = document.createElement("div");
+          temp.innerHTML = cached;
+          var svg = temp.querySelector("svg");
+          if (svg) {
+            svg.setAttribute("width", "40");
+            svg.setAttribute("height", "40");
+            svg.setAttribute("fill", "currentColor");
+            svg.querySelectorAll("*").forEach(function (el) {
+              el.removeAttribute("fill");
+              el.removeAttribute("stroke");
+            });
+            symbolHtml = svg.outerHTML;
+          } else {
+            symbolHtml = '<div id="delete-icon-symbol" style="width:40px;height:40px;"></div>';
+          }
+        } else {
+          symbolHtml = '<div id="delete-icon-symbol" style="width:40px;height:40px;"></div>';
+        }
+
+        overlay.innerHTML =
+          '<div class="delete-box">' +
+          '  <div class="delete-icon">' + symbolHtml + '</div>' +
+          '  <div class="delete-title">确认删除</div>' +
+          '  <div class="delete-msg">确定要删除这 <strong>' +
+          count +
+          "</strong> 个图标吗？<br>" +
+          '    <span style="font-size:0.78rem;color:#9ca3af;">将从磁盘删除 SVG 文件，不可恢复</span>' +
+          "  </div>" +
+          '  <div class="delete-icon-grid">' +
+          previewHtml +
+          "</div>" +
+          '  <div class="delete-actions">' +
+          '    <button class="delete-cancel" onclick="this.closest(\'.delete-overlay\').remove()">取消</button>' +
+          '    <button class="delete-confirm" onclick="deleteIcons(this)">确认删除</button>' +
+          "  </div>" +
+          "</div>";
+        document.body.appendChild(overlay);
+        // 缓存未命中时异步加载
+        if (!_svgCache["circle-alert"]) {
+          loadInlineIcon("circle-alert", "delete-icon-symbol");
+        }
+      }
+
+      function deleteIcons(btn) {
+        btn.disabled = true;
+        btn.textContent = "删除中…";
+
+        var names = [];
+        selected.forEach(function (n) {
+          names.push(n);
+        });
+
+        fetch("/api/icons/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ names: names }),
+        })
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (result) {
+            var overlay = btn.closest(".delete-overlay");
+            if (overlay) overlay.remove();
+
+            if (result.success) {
+              showToast("🗑 已删除 " + result.deleted + " 个图标");
+              names.forEach(function (name) {
+                ALL_SVG_FILES = ALL_SVG_FILES.filter(function (f) {
+                  return f !== name;
+                });
+                if (registeredSet.has(name)) {
+                  registeredSet.delete(name);
+                  delete ICON_PATHS[name];
+                }
+                selected.delete(name);
+              });
+              updateBatchButton();
+              render();
+            } else {
+              showToast("❌ 删除失败: " + result.message);
+            }
+          })
+          .catch(function () {
+            var overlay = btn.closest(".delete-overlay");
+            if (overlay) overlay.remove();
+            showToast("❌ 删除失败，请确认后端已启动");
+          });
+      }
+
+      // ============ 渲染 ============
+      function render() {
+        var filtered = ALL_SVG_FILES.filter(function (name) {
+          return matchesFilter(name) && matchesSearch(name);
+        });
+
+        var html = "";
+        filtered.forEach(function (name) {
+          var isReg = registeredSet.has(name);
+          var isSel = selected.has(name);
+          var cls = "icon-card";
+          if (isReg) cls += " registered";
+          if (isSel) cls += " selected";
+          var svgContent;
+          if (isReg) {
+            svgContent =
+              '<svg width="40" height="40" viewBox="0 0 1024 1024" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' +
+              ICON_PATHS[name] +
+              "</svg>";
+          } else {
+            svgContent =
+              '<img src="/api/icons/svg/' +
+              name +
+              '" width="40" height="40" alt="" style="display:block;" onerror="this.parentElement.innerHTML=\'<div style=width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#d1d5db;font-size:20px;>?</div>\'">';
+          }
+          var badge = isReg
+            ? '<div class="badge reg">✓</div>'
+            : '<div class="badge new">+</div>';
+          html +=
+            '<div class="' +
+            cls +
+            '" onclick="toggleIcon(\'' +
+            name +
+            '\')" title="' +
+            name +
+            (isReg ? " (已注册)" : " (未注册)") +
+            '">';
+          html += badge;
+          html += '<div class="preview">' + svgContent + "</div>";
+          html += '<div class="name">' + name + "</div>";
+          html += "</div>";
+        });
+
+        document.getElementById("grid").innerHTML = html;
+
+        document.getElementById("stat-total").textContent =
+          ALL_SVG_FILES.length;
+        document.getElementById("stat-reg").textContent = registeredSet.size;
+        document.getElementById("stat-unreg").textContent =
+          ALL_SVG_FILES.length - registeredSet.size;
+      }
+
+      // ============ 刷新 ============
+      function refreshPage() {
+        showToast("正在刷新...");
+        selected.clear();
+
+        Promise.all([
+          fetch("/api/icons/list").then(function (r) {
+            return r.json();
+          }),
+          fetch("/api/icons/paths").then(function (r) {
+            return r.json();
+          }),
+        ])
+          .then(function (results) {
+            if (results[0].success) {
+              ALL_SVG_FILES = results[0].data;
+            }
+            if (results[1].success) {
+              ICON_PATHS = results[1].data;
+              registeredSet = new Set(Object.keys(ICON_PATHS));
+            }
+            updateBatchButton();
+            render();
+            showToast("已刷新");
+          })
+          .catch(function (err) {
+            console.error(err);
+            showToast("刷新失败，请检查后端");
+          });
+      }
+
+      // ============ 一键注册 ============
+      function batchRegister() {
+        var names = [];
+        selected.forEach(function (n) {
+          names.push(n);
+        });
+        var btn = document.getElementById("batch-btn");
+        btn.disabled = true;
+        btn.textContent = "注册中…";
+
+        fetch("/api/icons/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ names: names }),
+        })
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (result) {
+            if (result.success) {
+              showToast("✅ " + result.message);
+              return fetch("/api/icons/paths").then(function (r) {
+                return r.json();
+              });
+            } else {
+              showToast("❌ " + result.message);
+              throw new Error(result.message);
+            }
+          })
+          .then(function (pathsResult) {
+            if (pathsResult && pathsResult.success) {
+              ICON_PATHS = pathsResult.data;
+              registeredSet = new Set(Object.keys(ICON_PATHS));
+            }
+            selected.clear();
+            updateBatchButton();
+            render();
+          })
+          .catch(function (err) {
+            showToast("❌ 注册失败，请确认后端已启动");
+            console.error(err);
+            updateBatchButton();
+          });
+      }
+
+      // ============ 一键注销 ============
+      function batchUnregister() {
+        var names = [];
+        selected.forEach(function (n) {
+          names.push(n);
+        });
+        var btn = document.getElementById("batch-btn");
+        btn.disabled = true;
+        btn.textContent = "注销中…";
+
+        var promises = names.map(function (name) {
+          return fetch("/api/icons/" + name, { method: "DELETE" });
+        });
+
+        Promise.all(promises)
+          .then(function (results) {
+            var ok = results.filter(function (r) {
+              return r.ok;
+            }).length;
+            showToast("🗑 已注销 " + ok + " 个图标");
+            return fetch("/api/icons/paths").then(function (r) {
+              return r.json();
+            });
+          })
+          .then(function (pathsResult) {
+            if (pathsResult && pathsResult.success) {
+              ICON_PATHS = pathsResult.data;
+              registeredSet = new Set(Object.keys(ICON_PATHS));
+            }
+            selected.clear();
+            updateBatchButton();
+            render();
+          })
+          .catch(function (err) {
+            showToast("❌ 注销失败");
+            console.error(err);
+            updateBatchButton();
+          });
+      }
+
+      // ============ 代码生成 ============
+      function showCode() {
+        if (selected.size === 0) return;
+        var names = [];
+        selected.forEach(function (name) {
+          names.push(name);
+        });
+
+        document.getElementById("code-cli").value =
+          "node tools/icon-tools/add-icon.js " + names.join(" ");
+
+        document.getElementById("panel-count").textContent = names.length;
+        document.getElementById("code-panel").classList.add("visible");
+        document
+          .getElementById("code-panel")
+          .scrollIntoView({ behavior: "smooth" });
+
+        document.getElementById("code-manual").value = "// 正在提取 path 数据…";
+
+        var promises = names.map(function (name) {
+          if (ICON_PATHS[name]) {
+            return Promise.resolve({ name: name, paths: ICON_PATHS[name] });
+          }
+          return fetch("/api/icons/svg/" + name)
+            .then(function (r) {
+              if (!r.ok) throw new Error("failed");
+              return r.text();
+            })
+            .then(function (svgText) {
+              var matches = svgText.match(/<path[\s\S]*?\/path>/g);
+              return { name: name, paths: matches ? matches.join("") : "" };
+            })
+            .catch(function () {
+              return { name: name, paths: "" };
+            });
+        });
+
+        Promise.all(promises).then(function (results) {
+          var lines = [];
+          var failed = [];
+          results.forEach(function (r) {
+            if (r.paths) {
+              lines.push("  '" + r.name + "': '" + r.paths + "',");
+            } else {
+              failed.push(r.name);
+            }
+          });
+
+          var code = lines.join("\n");
+          if (failed.length > 0) {
+            code += "\n\n// ⚠ 以下文件读取失败，请手动处理：\n";
+            failed.forEach(function (n) {
+              code += "// '" + n + "': '',\n";
+            });
+          }
+          document.getElementById("code-manual").value =
+            code || "// 所选图标均未注册，需先提取 path 数据";
+        });
+      }
+
+      function closeCode() {
+        document.getElementById("code-panel").classList.remove("visible");
+      }
+
+      function copyArea(id) {
+        var area = document.getElementById(id);
+        area.select();
+        try {
+          navigator.clipboard.writeText(area.value).then(function () {
+            showToast("已复制");
+          });
+        } catch (e) {
+          document.execCommand("copy");
+          showToast("已复制");
+        }
+      }
+
+      function copyCmd(cmd) {
+        try {
+          navigator.clipboard.writeText(cmd).then(function () {
+            showToast("已复制: " + cmd);
+          });
+        } catch (e) {
+          showToast("已复制（去终端粘贴即可）");
+        }
+      }
+
+      // ============ 灵动岛 Toast ============
+      var toastIsland = (function () {
+        var el = null;
+        var timer = null;
+
+        function getEl() {
+          if (!el) {
+            el = document.createElement("div");
+            el.className = "toast-island";
+            el.id = "toast-island";
+            document.body.appendChild(el);
+          }
+          return el;
+        }
+
+        function show(msg, duration) {
+          duration = duration || 2000;
+          var container = getEl();
+          if (timer) clearTimeout(timer);
+
+          // 进度聚合检测：上传中 (x/y) 格式自动显示进度条
+          var progressMatch = msg.match(/^📤 上传中 \((\d+)\/(\d+)\)/);
+          if (progressMatch) {
+            var cur = +progressMatch[1],
+              total = +progressMatch[2];
+            container.innerHTML =
+              "📤 上传中 (" +
+              cur +
+              "/" +
+              total +
+              ")" +
+              '<div class="toast-progress"><div class="toast-progress-bar" style="width:' +
+              Math.round((cur / total) * 100) +
+              '%"></div></div>';
+          } else {
+            container.textContent = msg;
+          }
+
+          container.classList.add("visible");
+
+          timer = setTimeout(function () {
+            container.classList.remove("visible");
+          }, duration);
+        }
+
+        return { show: show };
+      })();
+
+      // 兼容旧接口 — 17 处调用点无需修改
+      function showToast(msg) {
+        toastIsland.show(msg);
+      }
+
+      // ============ 启动 ============
+      init();
+    </script>
+    <div
+      id="floating-actions"
+      style="
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+      "
+    >
+      <div
+        id="floating-bar"
+        style="
+          display: none;
+          flex-direction: column;
+          gap: 10px;
+          background: #fff;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 12px 16px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        "
+      >
+        <!-- 第一行：信息 + 文字链接 -->
+        <div style="display: flex; align-items: center; gap: 12px">
+          <span
+            id="floating-count"
+            style="font-size: 0.82rem; color: #6b7280"
+          ></span>
+          <a
+            id="floating-deselect"
+            style="
+              cursor: pointer;
+              font-size: 0.8rem;
+              color: #ef4444;
+              white-space: nowrap;
+            "
+            onclick="deselectAll()"
+            >取消选中</a
+          >
+          <a
+            id="floating-code"
+            style="
+              cursor: pointer;
+              font-size: 0.8rem;
+              color: var(--primary);
+              white-space: nowrap;
+            "
+            onclick="showCode()"
+            >查看代码</a
+          >
+        </div>
+        <!-- 第二行：操作按钮 -->
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-between;
+          "
+        >
+          <button id="floating-btn" class="action-btn batch" disabled>
+            请先选中图标
+          </button>
+          <button
+            id="floating-delete"
+            class="action-btn delete"
+            style="display: none"
+          >
+            删除
+          </button>
+        </div>
+      </div>
+      <button
+        id="back-to-top"
+        style="
+          display: none;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: #fff;
+          border: 1.5px solid #d1d5db;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          transition: all 0.15s;
+        "
+        onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+        title="返回顶部"
+      >
+        <img
+          src="/api/icons/svg/arrow-big-up-dash"
+          width="22"
+          height="22"
+          alt="↑"
+          style="display: block"
+        />
+      </button>
+    </div>
+    <script>
+      var floatingBar = document.getElementById("floating-bar");
+      var batchInView = true;
+      var batchObserver = new IntersectionObserver(
+        function (entries) {
+          batchInView = entries[0].isIntersecting;
+          floatingBar.style.display =
+            !batchInView && selected.size > 0 ? "flex" : "none";
+        },
+        { threshold: 0 },
+      );
+      batchObserver.observe(document.getElementById("batch-btn"));
+
+      var backBtn = document.getElementById("back-to-top");
+      var sentinel = document.getElementById("scroll-sentinel");
+      var backObserver = new IntersectionObserver(
+        function (entries) {
+          backBtn.style.display = entries[0].isIntersecting ? "none" : "flex";
+          backBtn.style.alignItems = "center";
+          backBtn.style.justifyContent = "center";
+        },
+        { threshold: 0 },
+      );
+      backObserver.observe(sentinel);
+
+      // 将 SVG 文本直接插入容器（支持变色）
+      function insertSvgInline(svgText, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const temp = document.createElement("div");
+        temp.innerHTML = svgText;
+        const svg = temp.querySelector("svg");
+
+        if (!svg) {
+          container.innerHTML = "📁";
+          return;
+        }
+
+        svg.setAttribute("width", "24");
+        svg.setAttribute("height", "24");
+        svg.setAttribute("fill", "currentColor");
+        svg.style.display = "inline-block";
+        svg.style.verticalAlign = "middle";
+
+        // 移除子元素的硬编码颜色，确保继承父元素颜色
+        svg.querySelectorAll("*").forEach(function (el) {
+          el.removeAttribute("fill");
+          el.removeAttribute("stroke");
+        });
+
+        container.innerHTML = "";
+        container.appendChild(svg);
+      }
+
+      // 从 API 加载 SVG 图标并内嵌（复用 insertSvgInline）
+      async function loadInlineIcon(iconName, containerId) {
+        try {
+          const response = await fetch(`/api/icons/svg/${iconName}`);
+          if (!response.ok) throw new Error("图标加载失败");
+          insertSvgInline(await response.text(), containerId);
+        } catch (err) {
+          console.error(`加载图标 ${iconName} 失败:`, err);
+          const el = document.getElementById(containerId);
+          if (el) el.innerHTML = "📁";
+        }
+      }
+    </script>
+  </body>
+</html>

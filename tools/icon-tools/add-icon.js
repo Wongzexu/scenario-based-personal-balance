@@ -2,18 +2,18 @@
  * SVG 图标注册脚本
  *
  * 用法:
- *   node public/tools/icon-tools/add-icon.js <icon-name> [icon-name ...]
- *   node public/tools/icon-tools/add-icon.js --list          查看未注册的图标
- *   node public/tools/icon-tools/add-icon.js --all           批量注册所有未注册图标
+ *   node tools/icon-tools/add-icon.js <icon-name> [icon-name ...]
+ *   node tools/icon-tools/add-icon.js --list          查看未注册的图标
+ *   node tools/icon-tools/add-icon.js --all           批量注册所有未注册图标
  *
  * 示例:
- *   node public/tools/icon-tools/add-icon.js camera wifi bluetooth
+ *   node tools/icon-tools/add-icon.js camera wifi bluetooth
  */
 
 const fs = require("fs");
 const path = require("path");
 
-const ICONS_DIR = path.join(__dirname, "../../../src/assets/icons");
+const ICONS_DIR = path.join(__dirname, "../../src/assets/icons");
 const DATA_FILE = "public/js/core/icons-data.js";
 
 // ---- 核心函数 ----
@@ -139,21 +139,21 @@ if (args.length === 0) {
   console.log("");
   console.log("用法:");
   console.log(
-    "  node public/tools/icon-tools/add-icon.js <icon-name> [icon-name ...]",
+    "  node tools/icon-tools/add-icon.js <icon-name> [icon-name ...]",
   );
   console.log(
-    "  node public/tools/icon-tools/add-icon.js --sync            查看未注册图标",
+    "  node tools/icon-tools/add-icon.js --sync            查看未注册图标",
   );
   console.log(
-    "  node public/tools/icon-tools/add-icon.js --all             批量注册全部未注册图标",
+    "  node tools/icon-tools/add-icon.js --all             批量注册全部未注册图标",
   );
   console.log(
-    "  node public/tools/icon-tools/add-icon.js --search <关键词>   搜索可用图标",
+    "  node tools/icon-tools/add-icon.js --search <关键词>   搜索可用图标",
   );
   console.log("");
   console.log("示例:");
   console.log(
-    "  node public/tools/icon-tools/add-icon.js camera wifi bluetooth",
+    "  node tools/icon-tools/add-icon.js camera wifi bluetooth",
   );
   process.exit(0);
 }
