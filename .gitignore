@@ -1,8 +1,8 @@
 # Claude Code local configuration
 .claude/
-src
 node_modules/
 *.log
 .env
 public/todo/
 old/
+version/
