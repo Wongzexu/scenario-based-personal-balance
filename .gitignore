@@ -6,3 +6,5 @@ node_modules/
 public/todo/
 old/
 version/
+src/assets/icons
+data/
