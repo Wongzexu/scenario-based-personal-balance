@@ -5,7 +5,7 @@ const vm = require("vm");
 const multer = require("multer");
 const upload = multer({ dest: "temp/" });
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3001;
 
 // ============ 静态文件服务 ============
 
